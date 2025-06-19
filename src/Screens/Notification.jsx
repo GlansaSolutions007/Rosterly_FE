@@ -13,6 +13,8 @@ const NotificationPage = () => {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [removingId, setRemovingId] = useState(null);
 
+  const firstName=localStorage.getItem('firstName');
+
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -53,8 +55,7 @@ const NotificationPage = () => {
   const handleActions = (id, actionType) => {
     setNotificationId(id);
     setFeedbackMessage(
-      `Are you sure you want to ${
-        actionType == 1 ? "approve" : "deny"
+      `Are you sure you want to ${actionType == 1 ? "approve" : "deny"
       } this request?`
     );
     setShowConfirmButtons(true);
@@ -99,8 +100,23 @@ const NotificationPage = () => {
       console.error("Error handling notification:", error);
     }
   };
-  function formatDateTime(dateString) {
-    const date = new Date(dateString);
+
+  function formatDateTime(dateStr, isTimeOnly = false) {
+    if (!dateStr) return "";
+
+    // Handle time-only (for recurring)
+    if (isTimeOnly) {
+      const date = new Date(`1970-01-01T${convertTo24Hour(dateStr)}`);
+      if (isNaN(date.getTime())) return "Invalid Time";
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+
+    // Handle full datetime (for one-time)
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "Invalid Date";
     const time = date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
@@ -108,6 +124,16 @@ const NotificationPage = () => {
     const day = date.toLocaleDateString("en-GB");
     return `${day}, ${time}`;
   }
+
+  function convertTo24Hour(timeStr) {
+    const [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":");
+    hours = parseInt(hours, 10);
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, "0")}:${minutes}:00`;
+  }
+
 
   return (
     <div className="rounded-md  ">
@@ -132,38 +158,56 @@ const NotificationPage = () => {
             // >
             <div
               key={id}
-              className={`bg-white shadow-sm border border-gray-200 rounded-lg p-4 mb-4 flex justify-between items-start transition-all duration-300 ease-in-out ${
-                removingId === id
-                  ? "opacity-0 scale-95"
-                  : "opacity-100 scale-100"
-              }`}
+              className={`bg-white shadow-sm border border-gray-200 rounded-lg p-4 mb-4 flex justify-between items-start transition-all duration-300 ease-in-out ${removingId === id
+                ? "opacity-0 scale-95"
+                : "opacity-100 scale-100"
+                }`}
             >
               <div>
                 <p className="paragraphBold">
                   <div className="flex items-center gap-2">
                     <p className="text-lg font-bold text-indigo-900 mb-1">
-                      {innerData.userName || "User"}{" "}
+                      {innerData.userName || `${firstName}`}
                     </p>
-                    {innerData.message || "User"}{" "}
-                    {innerData.fromDT ? (
-                      <strong className="notClass">
-                        {formatDateTime(innerData.fromDT)}
-                      </strong>
-                    ) : null}
-                    {innerData.toDT ? (
-                      <strong className="notClass">
-                        to {formatDateTime(innerData.toDT)}
-                      </strong>
-                    ) : null}{" "}
-                    {innerData.day ? (
-                      // <strong className="notClass">{innerData.day}</strong>
+                    {innerData.message || "User"}
 
-                      <span className="bg-rosterGreen text-indigo-900 px-2 py-1 rounded-full">
-                        Day: {innerData.day}
-                      </span>
-                    ) : null}{" "}
+                    {/* Recurring Unavailability */}
+                    {innerData.day ? (
+                      <>
+                        {(innerData.fromDT && innerData.toDT) ? (
+                          <>
+                            <strong className="notClass">
+                              {formatDateTime(innerData.fromDT, true)}
+                            </strong>
+                            <strong className="notClass">
+                              to {formatDateTime(innerData.toDT, true)}
+                            </strong>
+                          </>
+                        ) : (
+                          <strong className="notClass">for All Day</strong>
+                        )}
+                        <span className="bg-rosterGreen text-indigo-900 px-2 py-1 rounded-full">
+                          Day: {innerData.day}
+                        </span>
+                      </>
+                    ) : (
+                      // One-time unavailability
+                      <>
+                        {innerData.fromDT && (
+                          <strong className="notClass">
+                            {formatDateTime(innerData.fromDT)}
+                          </strong>
+                        )}
+                        {innerData.toDT && (
+                          <strong className="notClass">
+                            to {formatDateTime(innerData.toDT)}
+                          </strong>
+                        )}
+                      </>
+                    )}
                   </div>
                 </p>
+
                 <p className="paragraphThin">
                   {innerData.reason ? (
                     <div className="flex items-center gap-2">
