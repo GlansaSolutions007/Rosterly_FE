@@ -164,7 +164,7 @@ const NotificationPage = () => {
                 }`}
             >
               <div>
-                <p className="paragraphBold">
+                <div className="paragraphBold">
                   <div className="flex items-center gap-2">
                     <p className="text-lg font-bold text-indigo-900 mb-1">
                       {innerData.userName || `${firstName}`}
@@ -206,9 +206,9 @@ const NotificationPage = () => {
                       </>
                     )}
                   </div>
-                </p>
+                </div>
 
-                <p className="paragraphThin">
+                <div className="paragraphThin">
                   {innerData.reason ? (
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-bold text-indigo-900 mb-1">
@@ -218,7 +218,7 @@ const NotificationPage = () => {
                     </div>
                   ) : null}
                   {/* Reason: {innerData.reason || "No reason provided"} */}
-                </p>
+                </div>
               </div>
               {innerData.status != null ? null : (
                 <div className="flex gap-2 mt-2 sm:mt-0">
