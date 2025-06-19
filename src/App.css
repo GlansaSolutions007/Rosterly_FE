@@ -1,0 +1,695 @@
+@import "tailwindcss";
+
+/* defaultt start */
+* {
+  /* font-family: "Montserrat", sans-serif; */
+  font-family: "Manrope", sans-serif;
+}
+
+.bgimg {
+  background-image: url(./assets/Background/loginBG.png);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+body {
+  background-color: #f1f1f1;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: #000000;
+  margin: 0;
+  padding: 0;
+  /* overflow-x: hidden; */
+}
+
+:root {
+  --font-main-heading: 1.625rem;
+  --font-heading: 1.25rem;
+  --font-subheading: 1rem;
+  --font-paragraph: 0.80rem;
+  --font-small: 0.625rem;
+}
+
+
+.borderRadius5 {
+  border-radius: 5px;
+}
+
+.borderRadius10 {
+  border-radius: 10px;
+}
+
+/* defaultt end */
+
+
+/* bg-colors-start----------- */
+
+
+
+
+.bg-white-100 {
+  background-color: #ffffff;
+}
+
+.bg-white-200 {
+  background-color: #F7F1FF;
+}
+
+.bg-white-300 {
+  background-color: #E6D4FE;
+}
+
+
+.bg-black-100 {
+  background-color: #3E344F;
+}
+
+.bg-black-200 {
+  background-color: #16131C;
+}
+
+.bg-black-300 {
+  background-color: #000000;
+}
+
+
+.bg-rosterGreen {
+  background-color: #6db3569a;
+}
+
+.bg-rosterRed {
+  background-color: #CA6D6D;
+}
+
+.bg-yellow {
+  background-color: #ffd900;
+}
+
+.bgSucces {
+  background-color: #04f07217;
+}
+
+.bgTable {
+  background-color: #85CA6D;
+}
+
+.bgTablePub {
+  background-color: #858685;
+}
+
+.bgTable1 {
+  background-color: #6ca45a;
+}
+
+.bg-theme {
+  background-color: #3F3897;
+}
+
+.sideBar {
+  background-color: #04f07217;
+}
+
+.mSideBar {
+  background-color: #dcf2e6;
+}
+
+.mSideBarInactive {
+  background-color: #dadada;
+  border: #afafaf 1px solid;
+}
+
+.rosterGreen {
+  color: #6db3569a;
+}
+
+
+
+
+.bg-white-100 {
+  background-color: #ffffff;
+}
+
+.bg-white-200 {
+  background-color: #F7F1FF;
+}
+
+.bg-white-300 {
+  background-color: #E6D4FE;
+}
+
+.bg-black-100 {
+  background-color: #3E344F;
+}
+
+.bg-black-200 {
+  background-color: #16131C;
+}
+
+.bg-black-300 {
+  background-color: #000000;
+}
+
+.bg-rosterGreen {
+  background-color: #6db3569a;
+}
+
+.bg-rosterRed {
+  background-color: #CA6D6D;
+}
+
+.cursor {
+  cursor: pointer;
+}
+
+.bg-yellow {
+  background-color: #ffd900;
+}
+
+.bgSucces {
+  background-color: #04f07217;
+  color: #201f1f;
+}
+
+.bgTable {
+  background-color: #85CA6D;
+}
+
+/* bg-colors-end----------- */
+
+
+/* Buttons start */
+
+.buttonSuccess {
+  background-color: #85CA6D;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  padding: 0 15px;
+  height: 35px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  /* box-shadow:
+    -3px -3px 4px #dedede,
+    3px 3px 4px #ddd6d6; */
+}
+
+.loginButton {
+  background: linear-gradient(to right, #85CA6D, #c6f5a6);
+  color: #201f1f;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: 10px;
+  /* transition: background-position 0.4s ease, transform 0.3s ease; */
+  background-size: 200% 100%;
+  background-position: left;
+}
+
+.loginButton:hover {
+  background-position: right;
+  transform: scale(1.05);
+}
+
+.buttonSuccessActive {
+  background-color: #85CA6D;
+  border-radius: 10px;
+  color: #000000c8;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  padding: 10px;
+  /* height: 35px; */
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  /* box-shadow:
+    -3px -3px 4px #dedede,
+    3px 3px 4px #ddd6d6; */
+}
+
+.buttonSuccess:hover {
+  background-color: #6EB356;
+  transform: translateY(-2px);
+  /* box-shadow:
+    -4px -4px 6px #dedede,
+    4px 4px 6px #ddd6d6; */
+}
+
+.buttonSuccessB {
+  /* background-color: #85CA6D; */
+  border-radius: 5px;
+  border: 2px solid #85CA6D;
+  color: #6EB356;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  padding: 0 15px;
+  height: 35px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  /* box-shadow:
+    -3px -3px 4px #dedede,
+    3px 3px 4px #ddd6d6; */
+}
+
+.buttonSuccessB:hover {
+  background-color: #6EB356;
+  color: #f1f1f1;
+  transform: translateY(-2px);
+  /* box-shadow:
+    -4px -4px 6px #dedede,
+    4px 4px 6px #ddd6d6; */
+}
+
+.bSuccess {
+  background-color: #85CA6D;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  padding: 0 15px;
+  height: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+
+}
+
+.bSuccess:hover {
+  background-color: #6EB356;
+  transform: translateY(-2px);
+
+}
+
+.buttonDanger {
+  background-color: #CA6D6D;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  height: 35px;
+  padding: 0 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  /* box-shadow:
+    -3px -3px 4px #dedede,
+    3px 3px 4px #ddd6d6; */
+}
+
+.buttonDanger:hover {
+  background-color: #B35656;
+  transform: translateY(-2px);
+  /* box-shadow:
+    -4px -4px 6px #dedede,
+    4px 4px 6px #ddd6d6; */
+}
+
+.textRed {
+  color: #e42d2d;
+}
+
+.buttonGrey {
+  background-color: #9C9C9C;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  height: 35px;
+  padding: 0 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  /* box-shadow:
+    -3px -3px 4px #dedede,
+    3px 3px 4px #ddd6d6; */
+}
+
+.buttonGrey:hover {
+  background-color: #818181;
+  transform: translateY(-2px);
+  /* box-shadow:
+    -4px -4px 6px #dedede,
+    4px 4px 6px #ddd6d6; */
+}
+
+.buttonTheme {
+  background-color: #393288;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  height: 35px;
+  padding: 0 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  /* box-shadow:
+    -3px -3px 4px #dedede,
+    3px 3px 4px #ddd6d6; */
+}
+
+.buttonTheme:hover {
+  background-color: #1E1A4D;
+  transform: translateY(-2px);
+  /* box-shadow:
+    -4px -4px 6px #dedede,
+    4px 4px 6px #ddd6d6; */
+}
+
+.glowingButton {
+  border-radius: 5px;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  height: 35px;
+  padding: 0 15px;
+  cursor: pointer;
+  /* transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease; */
+  box-shadow: 0 0 5px cyan,
+    0 0 25px cyan;
+}
+
+.glowingButton:hover {
+  box-shadow: 0 0 5px cyan,
+    0 0 25px cyan,
+    0 0 50px cyan,
+    0 0 100px cyan,
+    0 0 200px cyan;
+
+}
+
+.buttonSubway {
+  border-radius: 5px;
+  background-color: #ffde21;
+  color: #000000;
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  height: 35px;
+  padding: 0 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.buttonSubway:hover {
+  background-color: #e0c31f;
+  transform: translateY(-2px);
+  /* box-shadow:
+    -4px -4px 6px #dedede,
+    4px 4px 6px #ddd6d6; */
+}
+
+/* Buttons end */
+
+/* input start  */
+
+.mixedInput {
+  height: 35px;
+  font-size: var(--font-paragraph);
+  padding: 0 10px;
+  background-color: #ffff;
+  outline: none;
+  /* width: 100%; */
+}
+
+.input {
+  height: 35px;
+  font-size: var(--font-paragraph);
+  padding: 0 10px;
+  background-color: #ffff;
+  /* box-shadow:
+    -5px -5px 5px #f4f4f4,
+    5px 5px 5px #f5f5f5; */
+  border-radius: 5px;
+  outline: none;
+  /* width: 100%; */
+}
+
+.textarea {
+  font-size: var(--font-paragraph);
+  padding: 6px;
+  background-color: #ffff;
+  /* box-shadow:
+    -5px -5px 5px #f4f4f4,
+    5px 5px 5px #f5f5f5; */
+  border-radius: 5px;
+  outline: none;
+  width: 100%;
+}
+
+
+.input:focus {
+  border-color: 1px solid #7d88ff;
+  /* box-shadow: 0 0 0 2px #f5f5f5; */
+  outline: none;
+  /* width: 100%; */
+}
+
+.inputS {
+  height: 35px;
+  font-size: var(--font-paragraph);
+  padding: 0 10px;
+  background-color: #ffff;
+
+  border-radius: 5px;
+  outline: none;
+  /* width: 100%; */
+}
+
+
+.inputS:focus {
+  border-color: 1px solid #7d88ff;
+  outline: none;
+  /* width: 100%; */
+}
+
+.inputFull {
+  height: 35px;
+  font-size: var(--font-paragraph);
+  padding: 0 10px;
+  background-color: #ffff;
+  box-shadow:
+    -5px -5px 5px #f4f4f4,
+    5px 5px 5px #f5f5f5;
+  border-radius: 5px;
+  outline: none;
+  width: 100%;
+}
+
+
+.inputFull:focus {
+  border-color: 1px solid #7d88ff;
+  box-shadow: 0 0 0 2px #f5f5f5;
+  outline: none;
+  width: 100%;
+}
+
+.textArea {
+  width: 100%;
+  height: 35px;
+  padding: 0 10px;
+  background-color: #ffff;
+  box-shadow:
+    -5px -5px 5px #f4f4f4,
+    5px 5px 5px #f5f5f5;
+  border-radius: 5px;
+  font-size: var(--font-paragraph);
+}
+
+/* input end */
+
+/* Card start */
+
+.card {
+  background-color: #ededed70;
+  border-radius: 10px;
+  border: 2px solid #d2d2d2;
+  padding: 20px;
+  /* box-shadow: 0px 4px 20px #efefef; */
+}
+
+.cardYellow {
+  background-color: #04f07217;
+  border-radius: 10px;
+  /* border: 1px solid #eaeaea; */
+  padding: 10px 6px;
+  box-shadow:
+    0px 4px 20px #efefef;
+  color: #201f1f;
+  /* height: 180px;
+  width: 200px; */
+  border: 1px solid #85CA6D;
+  font-size: 12px
+}
+
+.cardRed {
+  background-color: #f7ca006c;
+  border-radius: 10px;
+  border: 1px solid #eaeaea;
+  padding: 20px;
+  box-shadow:
+    0px 4px 20px #efefef;
+  color: #201f1f;
+  height: 180px;
+  width: 200px;
+  border: 1px solid #fe5d5d29;
+}
+
+.cardGrey {
+  background-color: #cacaca70;
+  border-radius: 10px;
+  border: 1px solid #7878788a;
+  padding: 8px;
+ 
+  box-shadow:
+    0px 4px 20px #efefef;
+  color: #2e2e2e95;
+}
+
+.cardA {
+  background-color: #fffffff9;
+  border-radius: 10px;
+  border: 1px solid #bbbbbba3;
+  padding: 20px;
+  /* height: 180px; */
+  width: 200px;
+  box-shadow:
+    0px 4px 20px #efefef;
+  color: #2e2e2e95;
+}
+
+
+.sideBar {
+  /* background-color: #3F3897; */
+  background-color: #04f07217;
+  border: 1px solid #0171354f;
+}
+
+.mSideBar {
+  /* background-color: #3F3897; */
+  background-color: #dcf2e6;
+  border: 1px solid #0171354f;
+}
+
+/* Card end */
+
+
+/* font-size-start----------- */
+
+.mainHeading {
+  font-size: var(--font-main-heading);
+  font-weight: 600;
+  margin-bottom: 3px;
+  /* line-height: 20px; */
+}
+
+.heading {
+  font-size: var(--font-heading);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.headingBold {
+  font-size: var(--font-heading);
+  font-weight: 800;
+  margin-bottom: 3px;
+}
+
+.subHeading {
+  font-size: var(--font-subheading);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+/* .subHeadingWhite {
+  font-size: var(--font-subheading);
+  font-weight: 600;
+  margin-bottom: 3px;
+  color: #f1f1f1;
+} */
+.subHeadingBold {
+  font-size: var(--font-subheading);
+  font-weight: 800;
+  margin-bottom: 3px;
+}
+
+.paragraph {
+  font-size: var(--font-paragraph);
+  font-weight: 600;
+  margin-bottom: 3px;
+  line-height: 20px;
+}
+
+.paragraphBold {
+  font-size: var(--font-paragraph);
+  font-weight: 800;
+  margin-bottom: 3px;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+}
+
+.paragraphBoldWhite {
+  font-size: var(--font-paragraph);
+  font-weight: 800;
+  margin-bottom: 3px;
+  line-height: 20px;
+  color: #f1f1f1;
+}
+
+.paragraphThin {
+  font-size: var(--font-paragraph);
+  font-weight: 400;
+  margin-bottom: 3px;
+  line-height: 20px;
+}
+
+.smallFont {
+  font-size: var(--font-small);
+  font-weight: 400;
+  margin-bottom: 3px;
+}
+
+/* Icons start */
+
+.icon50 {
+  font-size: 15px;
+  margin-bottom: 3px;
+}
+
+.bg-theme {
+  background-color: #3F3897;
+}
+
+/* Icons End */
+
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+
+
+/* modal animation  */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.notClass {
+  background-color: #dcf2e6;
+  padding: 3px;
+}
+
+/* modal animation  */

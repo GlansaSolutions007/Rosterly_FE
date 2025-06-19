@@ -1,0 +1,281 @@
+
+/* .font10 {
+  font-size: 0.625rem;
+}
+
+.font12 {
+  font-size: 0.75rem;
+}
+
+.font14 {
+  font-size: 0.875rem;
+}
+
+.font16 {
+  font-size: 1rem;
+}
+
+.font18 {
+  font-size: 1.125rem;
+}
+
+.font20 {
+  font-size: 26px;
+}
+
+.font22 {
+  font-size: 1.375rem;
+}
+
+.font24 {
+  font-size: 1.5rem;
+}
+
+.font30 {
+  font-size: 1.875rem;
+} */
+
+/* font-size-end------------- */
+
+
+/* font-weight-start---------- */
+
+.font-weight-100 {
+    font-weight: 100;
+    /* Thin */
+  }
+  
+  .font-weight-200 {
+    font-weight: 200;
+    /* Extra Light */
+  }
+  
+  .font-weight-300 {
+    font-weight: 300;
+    /* Light */
+  }
+  
+  .font-weight-400 {
+    font-weight: 400;
+    /* Normal (Regular) */
+  }
+  
+  .font-weight-500 {
+    font-weight: 500;
+    /* Medium */
+  }
+  
+  .font-weight-600 {
+    font-weight: 600;
+    /* Semi Bold */
+  }
+  
+  .font-weight-700 {
+    font-weight: 700;
+    /* Bold */
+  }
+  
+  .font-weight-800 {
+    font-weight: 800;
+    /* Extra Bold */
+  }
+  
+  .font-weight-900 {
+    font-weight: 900;
+    /* Black */
+  }
+  
+  /* font-weight-end------------ */
+  
+  
+  /* bg-colors-start----------- */
+  
+  .bg-white-100 {
+    background-color: #ffffff;
+  }
+  
+  .bg-white-200 {
+    background-color: #F7F1FF;
+  }
+  
+  .bg-white-300 {
+    background-color: #E6D4FE;
+  }
+  
+  .bg-primary-100 {
+    background-color: #7C21FC;
+  }
+  
+  .bg-primary-200 {
+    background-color: #661DCC;
+  }
+  
+  .bg-primary-300 {
+    background-color: #4F179C;
+  }
+  
+  .bg-black-100 {
+    background-color: #3E344F;
+  }
+  
+  .bg-black-200 {
+    background-color: #16131C;
+  }
+  
+  .bg-black-300 {
+    background-color: #000000;
+  }
+  
+  .grayContainer {
+    background-color: #F4F4F4;
+  }
+  
+  .hash737373 {
+    background-color: #C8C8C8;
+  }
+  
+  /* bg-colors-end-------------*/
+  
+  
+  /* colors-start----------- */
+  
+  .white-100 {
+    color: #ffff;
+  }
+  
+  .white-200 {
+    color: #F7F1FF;
+  }
+  
+  .white-300 {
+    color: #E6D4FE;
+  }
+  
+  .primary-100 {
+    color: #7C21FC;
+  }
+  
+  /* colors-end-------------*/
+  
+  
+  /* colors */
+  
+  .bg-primary {
+    background-color: #d0a6f2;
+  }
+  
+  .bg-secondary {
+    background-color: #3E1D7A;
+  }
+  
+  .secondary-color {
+    color: #48214a;
+  }
+  
+  .text-primary {
+    color: #3E1D7A;
+  }
+  
+  .text-secondary {
+    color: #4b0082;
+  }
+  
+  .shadow-nav {
+    box-shadow: 0px 6px 10px 4px #00000044;
+  }
+  
+  /* colors */
+  
+  /* typography */
+  .heading {
+    font-size: 1.625rem;
+  }
+  
+  .sub-heading {
+    font-size: 1.25rem;
+  }
+  
+  .bg {
+    background-color: #e3e3e3;
+  }
+  
+  .w-48 {
+    width: 48%;
+  }
+  
+  .bg-modal-opacity {
+    background-color: #00000052;
+  }
+
+
+  
+.inputfield {
+  font-size: 12px;
+  padding: 0.5rem;
+  height: 30px;
+  border-radius: 0.25rem;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+/* button */
+.button {
+  background-color: #7d20f7;
+  color: #ffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  display: inline;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.primarybutton {
+  font-weight: 500;
+  border: 2px solid #85ca6d;
+  padding: 8px 16px;
+  display: inline;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #85ca6d;
+}
+
+.successbutton {
+  background-color: #85ca6d;
+  color: #ffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  display: inline;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.dangerbutton {
+  background-color: #ca736d;
+  color: #ffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  display: inline;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.denybutton {
+  font-weight: 500;
+  border: 2px solid #ca736d;
+  padding: 8px 16px;
+  display: inline;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #ca736d;
+}
+
+.clearButton {
+  background-color: #737373;
+  color: #ffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  display: inline;
+  border-radius: 5px;
+  cursor: pointer;
+}
