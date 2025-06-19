@@ -318,52 +318,78 @@ const Unavailability = () => {
     setIsShiftOpen(true);
   };
 
-  const saveRecurringUnavailability = async (e) => {
-    e.preventDefault();
-    const startTime = isAllDay ? null : start;
-    const finishTime = isAllDay ? null : finish;
-    const recuDay = isAllDay ? `${selectedDay} (All Day)` : selectedDay;
-    console.log(startTime, finishTime, modalNotifyToId, modalDescription);
-    console.log(id, "ID");
-    try {
-      const response = await axios.post(
-        `${baseURL}/unavailability/2`,
-        {
-          userId: id,
-          day: recuDay,
-          fromDT: startTime,
-          toDT: finishTime,
-          reason: modalDescription,
-          notifyTo: modalNotifyToId,
-          unavailStatus: "pending",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+const saveRecurringUnavailability = async (e) => {
+  e.preventDefault();
 
-      console.log("Recurring Unavailability saved:", response.data);
-      setStart("");
-      setFinish("");
-      setModalNotifyToId("");
-      setModalDescription("");
-      setIsShiftOpen(false);
-      setIsAllDay(false);
-      setFeedbackMessage(response.data?.message);
-      setFeedbackModalOpen(true);
-      console.log(start, finish, "Time");
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 3000);
-      fetchUnavailability();
-    } catch (error) {
-      console.error("Error saving recurring unavailability:", error);
-      setFeedbackMessage(error.response.data?.message || "An error occurred");
-      setFeedbackModalOpen(true);
-    }
-  };
+  setErrors({});
+
+  const newErrors = {};
+  const startTime = isAllDay ? null : start;
+  const finishTime = isAllDay ? null : finish;
+  const recuDay = isAllDay ? `${selectedDay} (All Day)` : selectedDay;
+
+  if (!isAllDay) {
+    if (!startTime) newErrors.start = "Start time is required.";
+    if (!finishTime) newErrors.finish = "Finish time is required.";
+
+    if (
+  startTime &&
+  finishTime &&
+  timeOptions.indexOf(finishTime) <= timeOptions.indexOf(startTime)
+) {
+  newErrors.time = "Finish time must be after start time.";
+}
+
+  }
+
+  if (!modalNotifyToId || modalNotifyToId === "-- Select --") {
+    newErrors.manager = "Please select a manager to notify.";
+  }
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${baseURL}/unavailability/2`,
+      {
+        userId: id,
+        day: recuDay,
+        fromDT: startTime,
+        toDT: finishTime,
+        reason: modalDescription,
+        notifyTo: modalNotifyToId,
+        unavailStatus: "pending",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("Recurring Unavailability saved:", response.data);
+    
+    setStart("");
+    setFinish("");
+    setModalNotifyToId("");
+    setModalDescription("");
+    setIsAllDay(false);
+    setIsShiftOpen(false);
+    setFeedbackMessage(response.data?.message);
+    setFeedbackModalOpen(true);
+    fetchUnavailability();
+  } catch (error) {
+    console.error("Error saving recurring unavailability:", error);
+    setFeedbackMessage(error.response?.data?.message || "An error occurred");
+    setFeedbackModalOpen(true);
+  }
+};
+
+
+
 
   const fetchUnavailability = async () => {
     try {
@@ -856,6 +882,8 @@ const Unavailability = () => {
                               </option>
                             ))}
                           </select>
+                          {errors.start && <p className="text-red-500 text-sm">{errors.start}</p>}
+
                         </div>
 
                         <div className="flex flex-col">
@@ -871,6 +899,9 @@ const Unavailability = () => {
                               </option>
                             ))}
                           </select>
+                          {errors.finish && <p className="text-red-500 text-sm">{errors.finish}</p>}
+                          {errors.time && <p className="text-red-500 text-sm">{errors.time}</p>}
+
                         </div>
                       </div>
                     )}
@@ -890,6 +921,8 @@ const Unavailability = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.manager && <p className="text-red-500 text-sm">{errors.manager}</p>}
+
                     </div>
 
                     <label className="paragraphBold">Description:</label>
@@ -902,6 +935,7 @@ const Unavailability = () => {
                         setModalDescription(capitalLetter(e.target.value))
                       }
                     ></textarea>
+
                   </div>
 
                   <div className="flex justify-end gap-2 mt-4">

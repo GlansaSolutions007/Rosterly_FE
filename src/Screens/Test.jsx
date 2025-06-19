@@ -95,3 +95,51 @@ const Unavailability = () => {
 };
 
 export default Unavailability;
+
+
+
+// const saveRecurringUnavailability = async (e) => {
+  //   e.preventDefault();
+  // setErrors({});
+  // const newErrors = {};
+  //   const startTime = isAllDay ? null : start;
+  //   const finishTime = isAllDay ? null : finish;
+  //   const recuDay = isAllDay ? `${selectedDay} (All Day)` : selectedDay;
+  //   console.log(startTime, finishTime, modalNotifyToId, modalDescription);
+  //   console.log(id, "ID");
+  //   try {
+  //     const response = await axios.post(
+  //       `${baseURL}/unavailability/2`,
+  //       {
+  //         userId: id,
+  //         day: recuDay,
+  //         fromDT: startTime,
+  //         toDT: finishTime,
+  //         reason: modalDescription,
+  //         notifyTo: modalNotifyToId,
+  //         unavailStatus: "pending",
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+
+  //     console.log("Recurring Unavailability saved:", response.data);
+  //     setStart("");
+  //     setFinish("");
+  //     setModalNotifyToId("");
+  //     setModalDescription("");
+  //     setIsShiftOpen(false);
+  //     setIsAllDay(false);
+  //     setFeedbackMessage(response.data?.message);
+  //     setFeedbackModalOpen(true);
+  //     console.log(start, finish, "Time");
+  //     fetchUnavailability();
+  //   } catch (error) {
+  //     console.error("Error saving recurring unavailability:", error);
+  //     setFeedbackMessage(error.response.data?.message || "An error occurred");
+  //     setFeedbackModalOpen(true);
+  //   }
+  // };
