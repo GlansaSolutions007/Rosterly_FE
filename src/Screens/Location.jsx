@@ -245,10 +245,7 @@ const Location = () => {
           },
         }
       );
-
       console.log("API Response:", res.data);
-      console.log("API Response:", res.data);
-
       if (res.data) {
         setFeedbackMessage(
           res.data?.message || "Employees assigned successfully."

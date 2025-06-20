@@ -543,7 +543,7 @@ const Rosterly = () => {
 
   return (
     <>
-      <div className="text-indigo-950 p-1">
+      <div className="text-indigo-950">
         <p className="text-sm sm:text-base font-bold">Welcome, </p>
         <p className="text-lg sm:text-xl font-bold">
           {getRoleId() === 1 ? `${userName} (Admin)` : userName}
@@ -553,7 +553,7 @@ const Rosterly = () => {
         <Dashboard />
       ) : (
         <>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 p-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="text-indigo-950">
               {isAtStore ? (
                 <>
