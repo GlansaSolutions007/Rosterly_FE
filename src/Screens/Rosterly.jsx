@@ -324,6 +324,12 @@ const Rosterly = () => {
     const storedDate = localStorage.getItem("todayDate");
     const storedTodayShift = localStorage.getItem("todayShift");
     const storedShiftStart = localStorage.getItem("shiftStartTimeRef");
+    const totalHours = localStorage.getItem('totalShiftHour');
+    const breakTime = localStorage.getItem('shiftBreak');
+
+    if (breakTime) setShiftBreak(breakTime);
+    if (totalHours) setTotalShiftHour(totalHours);
+
     if (storedShiftStart) {
       shiftStartTimeRef.current = parseInt(storedShiftStart, 10);
 
@@ -482,6 +488,9 @@ const Rosterly = () => {
             localStorage.setItem("todayShift", JSON.stringify(foundShift));
             localStorage.setItem("locationName", foundShift.location_name);
             localStorage.setItem("todayDate", formattedDate);
+            localStorage.setItem("totalShiftHour", foundShift.totalHrs);
+            localStorage.setItem('shiftBreak', foundShift.breakTime);
+
             setIsAtStore(true);
             setLocationError("");
           } else {
@@ -769,7 +778,7 @@ const Rosterly = () => {
 
                                     <p className="flex items-center gap-1">
                                       <FaMapMarkerAlt className="text-gray-600" title="Location" />
-                                      <span className={`${locationColor} font-bold` }>{shift.location_name}</span>
+                                      <span className={`${locationColor} font-bold`}>{shift.location_name}</span>
                                     </p>
                                   </div>
                                 )
