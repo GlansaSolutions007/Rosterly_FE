@@ -159,19 +159,24 @@ const Profile = () => {
             <div>
               <label className="paragraph">Mobile Number</label>
               <input
-                type="number"
-                value={user.mobileNumber}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  setUser({ ...user, mobileNumber: newValue });
+                  type="text"
+                  maxLength={10}
+                  value={user.mobileNumber}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    if (/^\d*$/.test(newValue) && newValue.length <= 10) {
+                      setUser({ ...user, mobileNumber: newValue });
 
-                  if (newValue.trim().length >= 10) {
-                    setErrors((prev) => ({ ...prev, mobileNumber: "" }));
-                  }
-                  setIsMobileUpdated(newValue !== originalMobileNumber);
-                }}
-                className={`input w-full border ${errors.mobileNumber ? "border-red-500" : "border-gray-500"}`}
-              />
+                      if (newValue.trim().length >= 10) {
+                        setErrors((prev) => ({ ...prev, mobileNumber: "" }));
+                      }
+                      setIsMobileUpdated(newValue !== originalMobileNumber);
+                    }
+                  }}
+                  className={`input w-full border ${errors.mobileNumber ? "border-red-500" : "border-gray-500"}`}
+                />
+
+
               {errors.mobileNumber && (
                 <p className="text-red-500 text-sm mt-1">{errors.mobileNumber}</p>
               )}
