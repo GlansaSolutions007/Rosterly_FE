@@ -38,7 +38,7 @@ const People = () => {
   const [filteredProfiles, setFilteredProfiles] = useState([]);
   const [filteredByStatus, setFilteredByStatus] = useState([]); // status-filtered data
   const [selectedStatus, setSelectedStatus] = useState("all");
-
+  const [locationUsers, setLocationUsers] = useState([]);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -156,37 +156,6 @@ const People = () => {
       setFeedbackModalOpen(true);
     }
   };
-
-  // const fetchUsers = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const currentUserId = parseInt(localStorage.getItem("id"));
-  //     const currentUserRole = parseInt(localStorage.getItem("role_id"));
-  //     const response = await axios.get(`${baseURL}/users`, {
-  //       headers: {
-  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //       },
-  //     });
-
-  //     let allUsers = response.data.data;
-
-  //     let filteredUsers = allUsers.filter(user => user.id !== currentUserId);
-
-  //     if (currentUserRole === 2) {
-  //       filteredUsers = filteredUsers.filter(user => user.role_id !== 1);
-  //     }
-
-  //     setUsers(filteredUsers);
-  //     setFilteredProfiles(filteredUsers);
-  //     console.log("Users fetched:", filteredUsers);
-
-  //   } catch (error) {
-  //     console.error("Error fetching users:", error.response?.data || error.message);
-  //   }
-  //   finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -506,6 +475,33 @@ const People = () => {
       setTimeout(() => setFeedbackModalOpen(false), 2000);
     }
   };
+  const handleLocationChange = async (locationId) => {
+  setSelectedLocation(locationId);
+  setLoading(true);
+
+  try {
+    if (locationId === "all") {
+      // If "All Locations" is selected, show all users
+      setFilteredProfiles(users);
+    } else {
+      const response = await axios.get(`${baseURL}/locations/${locationId}/users`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const locationUsers = response.data.data.map((item) => item.user); // Extract `user` from each record
+      setFilteredProfiles(locationUsers);
+    }
+  } catch (error) {
+    console.error("Error fetching users by location:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   return (
     <div className="flex flex-col gap-3 ">
@@ -533,7 +529,24 @@ const People = () => {
             <option value="1">Active</option>
             <option value="0">Inactive</option>
           </select>
+
+          {/* Location Filter */}
+         <select
+            name="selectedLocation"
+            className="input flex-1 min-w-[140px]"
+            value={selectedLocation}
+            onChange={(e) => handleLocationChange(e.target.value)}
+          >
+            <option value="all">All Locations</option>
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.location_name}
+              </option>
+            ))}
+          </select>
+
         </div>
+            
 
         {/* Right side: Search + Add */}
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
