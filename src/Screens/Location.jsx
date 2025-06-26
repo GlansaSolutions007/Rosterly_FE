@@ -449,9 +449,7 @@ const Location = () => {
           response.data?.message || "Location added successfully."
         );
         setFeedbackModalOpen(true);
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+       
       } catch (error) {
         console.error("API Error:", error);
         if (error.response && error.response.data.errors) {
