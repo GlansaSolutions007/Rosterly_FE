@@ -11,6 +11,8 @@ import FeedbackModal from "../Component/FeedbackModal";
 import { FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import { capitalLetter } from "../Component/capitalLetter";
 import { FaUserSlash } from "react-icons/fa";
+import { differenceInYears } from 'date-fns';
+
 
 const People = () => {
   const baseURL = import.meta.env.VITE_BASE_URL;
@@ -277,50 +279,7 @@ const People = () => {
     setFilteredProfiles(filtered);
   };
 
-  // const handleSearch = (e) => {
-  //   const keyword = e.target.value.toLowerCase();
-  //   setSearchTerm(keyword);
-
-  //   const filtered = users.filter((profile) => {
-  //     const firstName = profile.firstName?.toLowerCase() || "";
-  //     const lastName = profile.lastName?.toLowerCase() || "";
-  //     const email = profile.email?.toLowerCase() || "";
-  //     const mobile = profile.mobileNumber?.toString().toLowerCase() || "";
-  //     const location = profile.location?.toLowerCase() || "";
-  //     const payrate = profile.payrate?.toString() || "";
-  //     const payratePercent = profile.payratePercent?.toString() || "";
-  //     const dob = profile.dob || "";
-
-  //     const matchesKeyword =
-  //       firstName.includes(keyword) ||
-  //       lastName.includes(keyword) ||
-  //       email.includes(keyword) ||
-  //       mobile.includes(keyword) ||
-  //       location.includes(keyword) ||
-  //       payrate.includes(keyword) ||
-  //       payratePercent.includes(keyword) ||
-  //       dob.includes(keyword);
-
-  //     const matchesLocation =
-  //       selectedLocation === "all" ||
-  //       location === selectedLocation.toLowerCase();
-
-  //     return matchesKeyword && matchesLocation;
-  //   });
-
-  //   setFilteredProfiles(filtered);
-  // };
-
-  // const handleFilter = () => {
-  //   const filtered = users.filter((user) => {
-  //     return selectedStatus === ""
-  //       ? true // show all if no status selected
-  //       : String(user.status) === selectedStatus; // match active/inactive
-  //   });
-
-  //   setFilteredProfiles(filtered);
-  // };
-
+ 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 1 ? 0 : 1;
 
@@ -461,7 +420,7 @@ const People = () => {
 
       console.log("User deleted:", response.data); // Add this for confirmation
 
-      setFeedbackMessage("User deleted successfully.");
+      setFeedbackMessage(response.data?.message || "User updated successfully");
       setShowConfirmButtons(false);
       fetchUsers(); // Refresh the user list
       setTimeout(() => {
@@ -541,7 +500,7 @@ const People = () => {
           </select>
 
           {/* Location Filter */}
-          <select
+         {/* <select
             name="selectedLocation"
             className="input flex-1 min-w-[140px]"
             value={selectedLocation}
@@ -553,7 +512,7 @@ const People = () => {
                 {loc.location_name}
               </option>
             ))}
-          </select>
+          </select> */}
 
         </div>
 
@@ -777,46 +736,67 @@ const People = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                      <label className="paragraphBold">Date of Birth</label>
-                      <DatePicker
-                        className="input"
-                        selected={createDate}
-                        onChange={(date) => {
-                          setCreateDate(date);
-                          setFormData({
-                            ...formData,
-                            dob: date?.toISOString().split("T")[0],
-                          });
-                        }}
-                        showYearDropdown
-                        showMonthDropdown
-                        dateFormat="dd/MM/yyyy" // or "yyyy-MM-dd" if you prefer
-                        scrollableYearDropdown
-                        yearDropdownItemNumber={100} // optional: sets how many years to show
-                        placeholderText="Select date"
-                      />
-                      {errors.dob && (
-                        <p className="text-red-500 text-sm">{errors.dob}</p>
-                      )}
+                      <label className="paragraphBold">Date of Birthss</label>
+                    <DatePicker
+                          className="input"
+                          selected={createDate}
+                          onChange={(date) => {
+                            if (!date) return;
+
+                            const age = differenceInYears(new Date(), date);
+                            setCreateDate(date); // Always show selected date
+
+                            if (age < 10) {
+                              // Set error, don't allow in form
+                              setErrors(prev => ({ ...prev, dob: "You are not eligible. Minimum age is 10 years." }));
+                              setFormData(prev => ({ ...prev, dob: "" }));
+                            } else {
+                              // Clear error and set value
+                              setErrors(prev => ({ ...prev, dob: "" }));
+                              setFormData(prev => ({ ...prev, dob: date.toISOString().split("T")[0] }));
+                            }
+                          }}
+                          showYearDropdown
+                          showMonthDropdown
+                          dateFormat="dd/MM/yyyy"
+                          scrollableYearDropdown
+                          yearDropdownItemNumber={100}
+                          placeholderText="Select date"
+                          maxDate={new Date()}
+                        />
+                        {errors.dob && (
+                          <p className="text-red-500 text-sm mt-1">{errors.dob}</p>
+                        )}
                     </div>
                     <div className="flex flex-col">
                       <label className="paragraphBold">Phone Number</label>
-                      <input
+                     <input
                         type="text"
                         className="input"
                         value={formData.mobileNumber}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          // Allow only numbers
+                          if (!/^\d*$/.test(value)) return;
+
+                          // Set value
                           setFormData({
                             ...formData,
-                            mobileNumber: e.target.value,
-                          })
-                        }
+                            mobileNumber: value,
+                          });
+
+                          // Validation
+                          if (value.length === 0) {
+                            setErrors({ ...errors, mobileNumber: "Phone number is required" });
+                          } else if (value.length !== 10) {
+                            setErrors({ ...errors, mobileNumber: "Phone number must be exactly 10 digits" });
+                          } else {
+                            setErrors({ ...errors, mobileNumber: "" }); // Clear error if valid
+                          }
+                        }}
+                        maxLength={10}
                       />
-                      {errors.mobileNumber && (
-                        <p className="text-red-500 text-sm">
-                          {errors.mobileNumber}
-                        </p>
-                      )}
                     </div>
                   </div>
 
@@ -937,183 +917,183 @@ const People = () => {
       <Transition show={viewButtonModel} as={React.Fragment}>
         <Dialog
           as="div"
-          onClose={() => setViewButtonModel(false)}
-          className="relative z-50 rounded-lg"
-        >
-          <Transition.Child
-            as={React.Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-gray-700/70"></div>
-          </Transition.Child>
-          <div className="fixed inset-0 flex items-center justify-center">
-            <Transition.Child
-              as={React.Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95 translate-y-4"
-              enterTo="opacity-100 scale-100 translate-y-0"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100 translate-y-0"
-              leaveTo="opacity-0 scale-95 translate-y-4"
-            >
-              <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-sm sm:max-w-md w-full">
-                <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
-                  <Dialog.Title className="heading">
-                    Employee Details ({selectedProfile?.firstName})
-                  </Dialog.Title>
-                  <button
-                    className="text-white font-bold text-2xl"
-                    onClick={() => setViewButtonModel(false)}
+        onClose={() => setViewButtonModel(false)}
+        className="relative z-50 rounded-lg"
+      >
+         <Transition.Child
+                    as={React.Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
                   >
-                    ×
-                  </button>
+        <div className="fixed inset-0 bg-gray-700/70"></div>
+        </Transition.Child>
+        <div className="fixed inset-0 flex items-center justify-center">
+          <Transition.Child
+                       as={React.Fragment}
+                       enter="ease-out duration-300"
+                       enterFrom="opacity-0 scale-95 translate-y-4"
+                       enterTo="opacity-100 scale-100 translate-y-0"
+                       leave="ease-in duration-200"
+                       leaveFrom="opacity-100 scale-100 translate-y-0"
+                       leaveTo="opacity-0 scale-95 translate-y-4"
+                     >
+          <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-sm sm:max-w-md w-full">
+            <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
+              <Dialog.Title className="heading">
+                Employee Details ({selectedProfile?.firstName})
+              </Dialog.Title>
+              <button
+                className="text-white font-bold text-2xl"
+                onClick={() => setViewButtonModel(false)}
+              >
+                ×
+              </button>
+            </div>
+            <form className="mt-4 p-6 space-y-3" onSubmit={updateUser}>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="paragraphBold">First Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={selectedProfile?.firstName || ""}
+                    onChange={(e) =>
+                      setSelectedProfile((prev) => ({
+                        ...prev,
+                        firstName: capitalLetter(e.target.value),
+                      }))
+                    }
+                  />
                 </div>
-                <form className="mt-4 p-6 space-y-3" onSubmit={updateUser}>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col">
-                      <label className="paragraphBold">First Name</label>
-                      <input
-                        type="text"
-                        className="input"
-                        value={selectedProfile?.firstName || ""}
-                        onChange={(e) =>
+                <div className="flex flex-col">
+                  <label className="paragraphBold">Last Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={selectedProfile?.lastName || ""}
+                    onChange={(e) =>
+                      setSelectedProfile((prev) => ({
+                        ...prev,
+                        lastName: capitalLetter(e.target.value),
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <label className="paragraphBold">Email</label>
+                <input
+                  type="email"
+                  className="input"
+                  value={selectedProfile?.email || ""}
+                  onChange={(e) =>
+                    setSelectedProfile((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="paragraphBold">Date of Birth</label>
+                <DatePicker
+                  className="input w-100"
+                  selected={editDate} // <-- use the actual state
+                  onChange={(date) => {
+                    setEditDate(date);
+                    setSelectedProfile((prev) => ({
+                      ...prev,
+                      dob: date.toISOString().split("T")[0], // Optional: update dob in selectedProfile if needed
+                    }));
+                  }}
+                  showYearDropdown
+                  showMonthDropdown
+                  dateFormat="dd/MM/yyyy"
+                  scrollableYearDropdown
+                  yearDropdownItemNumber={100}
+                  placeholderText="Select date"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="flex flex-col">
+                  <label className="paragraphBold">Payrate/Hour</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={selectedProfile?.payrate || ""}
+                    onChange={(e) =>
+                      setSelectedProfile((prev) => ({
+                        ...prev,
+                        payrate: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="paragraphBold">Payrate %</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={selectedProfile?.payratePercent || ""}
+                    onChange={(e) =>
+                      setSelectedProfile((prev) => ({
+                        ...prev,
+                        payratePercent: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="paragraphBold">Phone Number</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={selectedProfile?.mobileNumber || ""}
+                    onChange={(e) =>
+                      setSelectedProfile((prev) => ({
+                        ...prev,
+                        mobileNumber: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="paragraphBold">Profile Image</label>
+                  <input
+                    type="file"
+                    className="bg-white rounded p-2"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
                           setSelectedProfile((prev) => ({
                             ...prev,
-                            firstName: capitalLetter(e.target.value),
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <label className="paragraphBold">Last Name</label>
-                      <input
-                        type="text"
-                        className="input"
-                        value={selectedProfile?.lastName || ""}
-                        onChange={(e) =>
-                          setSelectedProfile((prev) => ({
-                            ...prev,
-                            lastName: capitalLetter(e.target.value),
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="paragraphBold">Email</label>
-                    <input
-                      type="email"
-                      className="input"
-                      value={selectedProfile?.email || ""}
-                      onChange={(e) =>
-                        setSelectedProfile((prev) => ({
-                          ...prev,
-                          email: e.target.value,
-                        }))
+                            image: reader.result, // Base64 image data
+                          }));
+                        };
+                        reader.readAsDataURL(file);
                       }
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="paragraphBold">Date of Birth</label>
-                    <DatePicker
-                      className="input w-100"
-                      selected={editDate} // <-- use the actual state
-                      onChange={(date) => {
-                        setEditDate(date);
-                        setSelectedProfile((prev) => ({
-                          ...prev,
-                          dob: date.toISOString().split("T")[0], // Optional: update dob in selectedProfile if needed
-                        }));
-                      }}
-                      showYearDropdown
-                      showMonthDropdown
-                      dateFormat="dd/MM/yyyy"
-                      scrollableYearDropdown
-                      yearDropdownItemNumber={100}
-                      placeholderText="Select date"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="flex flex-col">
-                      <label className="paragraphBold">Payrate/Hour</label>
-                      <input
-                        type="text"
-                        className="input"
-                        value={selectedProfile?.payrate || ""}
-                        onChange={(e) =>
-                          setSelectedProfile((prev) => ({
-                            ...prev,
-                            payrate: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <label className="paragraphBold">Payrate %</label>
-                      <input
-                        type="text"
-                        className="input"
-                        value={selectedProfile?.payratePercent || ""}
-                        onChange={(e) =>
-                          setSelectedProfile((prev) => ({
-                            ...prev,
-                            payratePercent: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <label className="paragraphBold">Phone Number</label>
-                      <input
-                        type="text"
-                        className="input"
-                        value={selectedProfile?.mobileNumber || ""}
-                        onChange={(e) =>
-                          setSelectedProfile((prev) => ({
-                            ...prev,
-                            mobileNumber: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <label className="paragraphBold">Profile Image</label>
-                      <input
-                        type="file"
-                        className="bg-white rounded p-2"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setSelectedProfile((prev) => ({
-                                ...prev,
-                                image: reader.result, // Base64 image data
-                              }));
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                  {selectedProfile?.profileImage && (
-                    <img
-                      src={
-                        selectedProfile.profileImage.startsWith("http")
-                          ? selectedProfile.profileImage
-                          : `${profileBaseURL}/${selectedProfile.profileImage}`
-                      }
-                      alt="Preview"
-                      className="mt-2 w-32 h-32 object-cover rounded-md"
-                    />
-                  )}
+                    }}
+                  />
+                </div>
+              </div>
+              {selectedProfile?.profileImage && (
+                <img
+                  src={
+                    selectedProfile.profileImage.startsWith("http")
+                      ? selectedProfile.profileImage
+                      : `${profileBaseURL}/${selectedProfile.profileImage}`
+                  }
+                  alt="Preview"
+                  className="mt-2 w-32 h-32 object-cover rounded-md"
+                />
+              )}
 
                   <div className="flex justify-end gap-2 mt-4">
                     <button
