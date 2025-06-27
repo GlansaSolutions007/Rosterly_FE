@@ -89,7 +89,7 @@ const ChangePassword = ({ onClose }) => {
   };
 
   const renderPasswordField = (
-    label,
+    label,  
     value,
     setValue,
     show,

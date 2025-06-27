@@ -164,7 +164,7 @@ const People = () => {
     try {
       const currentUserId = Number(localStorage.getItem("id"));
       const currentUserRole = Number(localStorage.getItem("role_id"));
-
+console.log(currentUserRole);
       const endpoint =
         currentUserRole === 1
           ? `${baseURL}/users`
@@ -217,8 +217,9 @@ const People = () => {
 
   useEffect(() => {
     if (users.length > 0) {
-      setFilteredByStatus(users);
-      applySearchFilter(searchTerm, users);
+      // setFilteredByStatus(users);
+      // applySearchFilter(searchTerm, users);
+      applyCombinedFilters(users, selectedLocation, selectedStatus, searchTerm);
     }
   }, [users]);
 
@@ -231,6 +232,7 @@ const People = () => {
       });
       // console.log("Locations fetched:", response.data);
       setLocations(response.data);
+      console.log(response.data.map(item => item.id), 'only IDs');
     } catch (error) {
       console.error("Error fetching locations:", error);
     }
@@ -300,17 +302,18 @@ const People = () => {
       if (response.status === 200) {
         console.log("Status updated successfully:", response.data);
 
-        // ✅ Update both users and filteredProfiles
+        // Update all users state
         setUsers((prev) =>
           prev.map((profile) =>
             profile.id === id ? { ...profile, status: newStatus } : profile
           )
         );
-        setFilteredProfiles((prev) =>
-          prev.map((profile) =>
-            profile.id === id ? { ...profile, status: newStatus } : profile
-          )
+
+        // Re-filter updated users
+        const updatedUsers = users.map((profile) =>
+          profile.id === id ? { ...profile, status: newStatus } : profile
         );
+        applyCombinedFilters(updatedUsers, selectedLocation, selectedStatus, searchTerm);
       } else {
         console.error("Unexpected response:", response);
       }
@@ -471,10 +474,18 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
   }
 
   // 🔹 Apply status filter
-  if (statusValue !== "all") {
-    filtered = filtered.filter(
-      (user) => String(user.status) === String(statusValue)
-    );
+  // if (statusValue !== "all") {
+  //   filtered = filtered.filter(
+  //     (user) => String(user.status) === String(statusValue)
+  //   );
+  // }
+   if (statusValue !== "all") {
+    filtered = filtered.filter((user) => {
+       if (statusValue === "2" || statusValue === "3") {
+        return user.role_id === Number(statusValue); // ✅ Corrected comparison
+      }
+      return String(user.status) === String(statusValue);
+    });
   }
 
   // 🔹 Apply search keyword
@@ -494,6 +505,8 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
   }
 
   setFilteredProfiles(filtered);
+  console.log("Applied filters:" , { locationId, statusValue, keyword });
+  console.log("Filtered profiles:", filtered);
 };
 
 
@@ -505,58 +518,57 @@ useEffect(() => {
 
 
 
-
   return (
     <div className="flex flex-col gap-3 ">
       <div className="sticky top-0 bg-[#f1f1f1] py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         {/* Left side: Filters */}
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
+
+
           <select
-            name="selectedStatus"
-            className="input flex-1 min-w-[140px]"
-            value={selectedStatus}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSelectedStatus(value);
+  name="selectedStatus"
+  className="input flex-1 min-w-[140px]"
+  value={selectedStatus}
+  onChange={(e) => {
+    const value = e.target.value;
+    setSelectedStatus(value);
 
-              const statusFiltered = users.filter((user) => {
-                if (value === "all") {
-                  return true;
-                }
-                if (value === "manager") {
-                  return Number(user.role_id) === 2;
-                }
-                return String(user.status) === value;
-              });
+    applyCombinedFilters(users, selectedLocation, value, searchTerm);
+    // setFilteredProfiles(filtered);
+    // setFilteredByStatus(filtered);
+    // applySearchFilter(searchTerm, filtered);
+  }}
+>
+  <option value="all">All Status</option>
+  <option value="1">Active</option>
+  <option value="0">Inactive</option>
+  <option value="2">Manager</option>
+  <option value="3">Employee</option>
 
-              setFilteredByStatus(statusFiltered);
-              // Also apply current search term to filtered result
-              applySearchFilter(searchTerm, statusFiltered);
-            }}
-          >
-            <option value="all">All Employees</option>
-            {Number(localStorage.getItem("role_id")) !== 2 && (
-              <option value="manager">Managers</option>
-            )}
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-
-          </select>
+</select>
 
           {/* Location Filter */}
         <select
-          name="selectedLocation"
-          className="input flex-1 min-w-[140px]"
-          value={selectedLocation}
-          onChange={(e) => handleLocationChange(e.target.value)}
-        >
-          <option value="all">All Locations</option>
-          {locations.map((loc) => (
-            <option key={loc.id} value={loc.id}>
-              {loc.location_name}
-            </option>
-          ))}
-        </select>
+  name="selectedLocation"
+  className="input flex-1 min-w-[140px]"
+  value={selectedLocation}
+  onChange={(e) => {
+    const value = e.target.value;
+    setSelectedLocation(value);
+
+   applyCombinedFilters(users,  value, selectedStatus, searchTerm);
+    // setFilteredProfiles(filtered);
+    // setFilteredByStatus(filtered);
+    // applySearchFilter(searchTerm, filtered);
+  }}
+>
+  <option value="all">All Locations</option>
+  {locations.map((loc) => (
+    <option key={loc.id} value={loc.id}>
+      {loc.location_name}
+    </option>
+  ))}
+</select>
 
 
         </div>
