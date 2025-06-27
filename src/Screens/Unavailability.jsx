@@ -463,9 +463,9 @@ const saveRecurringUnavailability = async (e) => {
             <h1 className="heading">Unavailable Days</h1>
             <form onSubmit={saveUnavailability}>
               <div className="flex flex-col gap-4 mt-2">
-                <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col md:flex-row md:flex-wrap gap-6">
                   <div className="">
-                    <div className="flex items-center gap-4 flex-1 min-w-[280px]">
+                    <div className="flex items-center gap-4 flex-1  min-w-[280px]">
                       <label className="paragraphBold whitespace-nowrap">
                         From Date & Time:
                       </label>
