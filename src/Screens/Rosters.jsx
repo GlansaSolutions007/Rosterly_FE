@@ -503,7 +503,7 @@ const Rosters = () => {
 
   try {
     const response = await axios.post(
-      `${baseURL}/postRoster`, // ✅ Fixed typo from `porstRoster`
+      `${baseURL}/porstRoster`, // ✅ Fixed typo from `porstRoster`
       {
         rWeekStartDate: startOfWeek.format("YYYY-MM-DD"),
         rWeekEndDate: endOfWeek.format("YYYY-MM-DD"),
