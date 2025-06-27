@@ -439,9 +439,11 @@ const People = () => {
   setLoading(true);
 
   try {
+    let fetchedUsers = [];
+
     if (locationId === "all") {
-      // If "All Locations" is selected, show all users
-      setFilteredProfiles(users);
+      // No API needed, use all users
+      fetchedUsers = users;
     } else {
       const response = await axios.get(`${baseURL}/locations/${locationId}/users`, {
         headers: {
@@ -449,15 +451,61 @@ const People = () => {
         },
       });
 
-      const locationUsers = response.data.data.map((item) => item.user); // Extract `user` from each record
-      setFilteredProfiles(locationUsers);
+      fetchedUsers = response.data.data.map((item) => item.user);
     }
+
+    setFilteredByStatus(fetchedUsers); // Save new base list
+    applyCombinedFilters(fetchedUsers, locationId, selectedStatus, searchTerm); // Filter by location, status, and search
   } catch (error) {
     console.error("Error fetching users by location:", error);
   } finally {
     setLoading(false);
   }
 };
+
+
+const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") => {
+  let filtered = allUsers;
+
+  // 🔹 Apply location filter
+  if (locationId !== "all") {
+    filtered = filtered.filter(
+      (user) => String(user.location_id) === String(locationId)
+    );
+  }
+
+  // 🔹 Apply status filter
+  if (statusValue !== "all") {
+    filtered = filtered.filter(
+      (user) => String(user.status) === String(statusValue)
+    );
+  }
+
+  // 🔹 Apply search keyword
+  if (keyword.trim() !== "") {
+    const lowerKeyword = keyword.toLowerCase();
+    filtered = filtered.filter((profile) => {
+      const fullName = `${profile.firstName} ${profile.lastName}`.toLowerCase();
+      const email = profile.email?.toLowerCase() || "";
+      const phone = profile.mobileNumber?.toString() || "";
+
+      return (
+        fullName.includes(lowerKeyword) ||
+        email.includes(lowerKeyword) ||
+        phone.includes(lowerKeyword)
+      );
+    });
+  }
+
+  setFilteredProfiles(filtered);
+};
+
+
+
+useEffect(() => {
+  applyCombinedFilters(filteredByStatus, selectedLocation, selectedStatus, searchTerm);
+}, [searchTerm]);
+
 
 
 
@@ -490,19 +538,20 @@ const People = () => {
           </select>
 
           {/* Location Filter */}
-         {/* <select
-            name="selectedLocation"
-            className="input flex-1 min-w-[140px]"
-            value={selectedLocation}
-            onChange={(e) => handleLocationChange(e.target.value)}
-          >
-            <option value="all">All Locations</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.location_name}
-              </option>
-            ))}
-          </select> */}
+        <select
+          name="selectedLocation"
+          className="input flex-1 min-w-[140px]"
+          value={selectedLocation}
+          onChange={(e) => handleLocationChange(e.target.value)}
+        >
+          <option value="all">All Locations</option>
+          {locations.map((loc) => (
+            <option key={loc.id} value={loc.id}>
+              {loc.location_name}
+            </option>
+          ))}
+        </select>
+
 
         </div>
             
