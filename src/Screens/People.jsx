@@ -476,29 +476,29 @@ const People = () => {
     }
   };
   const handleLocationChange = async (locationId) => {
-  setSelectedLocation(locationId);
-  setLoading(true);
+    setSelectedLocation(locationId);
+    setLoading(true);
 
-  try {
-    if (locationId === "all") {
-      // If "All Locations" is selected, show all users
-      setFilteredProfiles(users);
-    } else {
-      const response = await axios.get(`${baseURL}/locations/${locationId}/users`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+    try {
+      if (locationId === "all") {
+        // If "All Locations" is selected, show all users
+        setFilteredProfiles(users);
+      } else {
+        const response = await axios.get(`${baseURL}/locations/${locationId}/users`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-      const locationUsers = response.data.data.map((item) => item.user); // Extract `user` from each record
-      setFilteredProfiles(locationUsers);
+        const locationUsers = response.data.data.map((item) => item.user); // Extract `user` from each record
+        setFilteredProfiles(locationUsers);
+      }
+    } catch (error) {
+      console.error("Error fetching users by location:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching users by location:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
 
@@ -517,7 +517,13 @@ const People = () => {
               setSelectedStatus(value);
 
               const statusFiltered = users.filter((user) => {
-                return value === "all" ? true : String(user.status) === value;
+                if (value === "all") {
+                  return true;
+                }
+                if (value === "manager") {
+                  return Number(user.role_id) === 2;
+                }
+                return String(user.status) === value;
               });
 
               setFilteredByStatus(statusFiltered);
@@ -526,12 +532,16 @@ const People = () => {
             }}
           >
             <option value="all">All Employees</option>
+            {Number(localStorage.getItem("role_id")) !== 2 && (
+              <option value="manager">Managers</option>
+            )}
             <option value="1">Active</option>
             <option value="0">Inactive</option>
+
           </select>
 
           {/* Location Filter */}
-         <select
+          <select
             name="selectedLocation"
             className="input flex-1 min-w-[140px]"
             value={selectedLocation}
@@ -546,7 +556,7 @@ const People = () => {
           </select>
 
         </div>
-            
+
 
         {/* Right side: Search + Add */}
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
@@ -588,9 +598,8 @@ const People = () => {
             filteredProfiles.map((profile) => (
               <div key={profile.id} className="w-full">
                 <div
-                  className={`shadow-xl p-4 rounded-xl h-full flex flex-col justify-between ${
-                    profile.status === 1 ? "mSideBar" : "mSideBarInactive"
-                  }`}
+                  className={`shadow-xl p-4 rounded-xl h-full flex flex-col justify-between ${profile.status === 1 ? "mSideBar" : "mSideBarInactive"
+                    }`}
                 >
                   {/* Top Section: Image + Info */}
                   <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
@@ -610,7 +619,7 @@ const People = () => {
                       )}
                       <div className="text-left w-full min-w-0 overflow-hidden">
                         <h3 className="paragraphBold md:subheadingBold break-words">
-                          {profile.firstName} {profile.lastName}
+                          {profile.role_id === 2 ? `${profile.firstName} ${profile.lastName} (M)` : profile.role_id === 1 ? `${profile.firstName} ${profile.lastName} (A)` : `${profile.firstName} ${profile.lastName} (E)`}
                         </h3>
                         <p className="paragraphThin break-words">
                           {profile.email}
@@ -658,7 +667,7 @@ const People = () => {
                           setViewButtonModel(true);
                         }}
                       />
-                     
+
                       <HiTrash
                         title="Delete Profile"
                         className="textRed cursor-pointer p-2 rounded-md w-8 h-8 flex items-center justify-center"
@@ -675,7 +684,7 @@ const People = () => {
       {/* Add Employee Modal */}
       <Transition show={isModalOpen} as={React.Fragment}>
         <Dialog
-        as="div"
+          as="div"
           onClose={() => setIsModalOpen(false)}
           className="relative z-50 rounded-lg"
         >
@@ -925,207 +934,207 @@ const People = () => {
 
       {/* View Profile Modal */}
 
- <Transition show={viewButtonModel} as={React.Fragment}>
+      <Transition show={viewButtonModel} as={React.Fragment}>
         <Dialog
           as="div"
-        onClose={() => setViewButtonModel(false)}
-        className="relative z-50 rounded-lg"
-      >
-         <Transition.Child
-                    as={React.Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-        <div className="fixed inset-0 bg-gray-700/70"></div>
-        </Transition.Child>
-        <div className="fixed inset-0 flex items-center justify-center">
+          onClose={() => setViewButtonModel(false)}
+          className="relative z-50 rounded-lg"
+        >
           <Transition.Child
-                       as={React.Fragment}
-                       enter="ease-out duration-300"
-                       enterFrom="opacity-0 scale-95 translate-y-4"
-                       enterTo="opacity-100 scale-100 translate-y-0"
-                       leave="ease-in duration-200"
-                       leaveFrom="opacity-100 scale-100 translate-y-0"
-                       leaveTo="opacity-0 scale-95 translate-y-4"
-                     >
-          <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-sm sm:max-w-md w-full">
-            <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
-              <Dialog.Title className="heading">
-                Employee Details ({selectedProfile?.firstName})
-              </Dialog.Title>
-              <button
-                className="text-white font-bold text-2xl"
-                onClick={() => setViewButtonModel(false)}
-              >
-                ×
-              </button>
-            </div>
-            <form className="mt-4 p-6 space-y-3" onSubmit={updateUser}>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col">
-                  <label className="paragraphBold">First Name</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.firstName || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        firstName: capitalLetter(e.target.value),
-                      }))
-                    }
-                  />
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-700/70"></div>
+          </Transition.Child>
+          <div className="fixed inset-0 flex items-center justify-center">
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95 translate-y-4"
+              enterTo="opacity-100 scale-100 translate-y-0"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100 translate-y-0"
+              leaveTo="opacity-0 scale-95 translate-y-4"
+            >
+              <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-sm sm:max-w-md w-full">
+                <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
+                  <Dialog.Title className="heading">
+                    Employee Details ({selectedProfile?.firstName})
+                  </Dialog.Title>
+                  <button
+                    className="text-white font-bold text-2xl"
+                    onClick={() => setViewButtonModel(false)}
+                  >
+                    ×
+                  </button>
                 </div>
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Last Name</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.lastName || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        lastName: capitalLetter(e.target.value),
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <label className="paragraphBold">Email</label>
-                <input
-                  type="email"
-                  className="input"
-                  value={selectedProfile?.email || ""}
-                  onChange={(e) =>
-                    setSelectedProfile((prev) => ({
-                      ...prev,
-                      email: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="paragraphBold">Date of Birth</label>
-                <DatePicker
-                  className="input w-100"
-                  selected={editDate} // <-- use the actual state
-                  onChange={(date) => {
-                    setEditDate(date);
-                    setSelectedProfile((prev) => ({
-                      ...prev,
-                      dob: date.toISOString().split("T")[0], // Optional: update dob in selectedProfile if needed
-                    }));
-                  }}
-                  showYearDropdown
-                  showMonthDropdown
-                  dateFormat="dd/MM/yyyy"
-                  scrollableYearDropdown
-                  yearDropdownItemNumber={100}
-                  placeholderText="Select date"
-                />  [p  ]
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Payrate/Hour</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.payrate || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        payrate: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Payrate %</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.payratePercent || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        payratePercent: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Phone Number</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.mobileNumber || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        mobileNumber: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Profile Image</label>
-                  <input
-                    type="file"
-                    className="bg-white rounded p-2"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
+                <form className="mt-4 p-6 space-y-3" onSubmit={updateUser}>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">First Name</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.firstName || ""}
+                        onChange={(e) =>
                           setSelectedProfile((prev) => ({
                             ...prev,
-                            image: reader.result, // Base64 image data
-                          }));
-                        };
-                        reader.readAsDataURL(file);
+                            firstName: capitalLetter(e.target.value),
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Last Name</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.lastName || ""}
+                        onChange={(e) =>
+                          setSelectedProfile((prev) => ({
+                            ...prev,
+                            lastName: capitalLetter(e.target.value),
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="paragraphBold">Email</label>
+                    <input
+                      type="email"
+                      className="input"
+                      value={selectedProfile?.email || ""}
+                      onChange={(e) =>
+                        setSelectedProfile((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
                       }
-                    }}
-                  />
-                </div>
-              </div>
-              {selectedProfile?.profileImage && (
-                <img
-                  src={
-                    selectedProfile.profileImage.startsWith("http")
-                      ? selectedProfile.profileImage
-                      : `${profileBaseURL}/${selectedProfile.profileImage}`
-                  }
-                  alt="Preview"
-                  className="mt-2 w-32 h-32 object-cover rounded-md"
-                />
-              )}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="paragraphBold">Date of Birth</label>
+                    <DatePicker
+                      className="input w-100"
+                      selected={editDate} // <-- use the actual state
+                      onChange={(date) => {
+                        setEditDate(date);
+                        setSelectedProfile((prev) => ({
+                          ...prev,
+                          dob: date.toISOString().split("T")[0], // Optional: update dob in selectedProfile if needed
+                        }));
+                      }}
+                      showYearDropdown
+                      showMonthDropdown
+                      dateFormat="dd/MM/yyyy"
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={100}
+                      placeholderText="Select date"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Payrate/Hour</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.payrate || ""}
+                        onChange={(e) =>
+                          setSelectedProfile((prev) => ({
+                            ...prev,
+                            payrate: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Payrate %</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.payratePercent || ""}
+                        onChange={(e) =>
+                          setSelectedProfile((prev) => ({
+                            ...prev,
+                            payratePercent: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Phone Number</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.mobileNumber || ""}
+                        onChange={(e) =>
+                          setSelectedProfile((prev) => ({
+                            ...prev,
+                            mobileNumber: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Profile Image</label>
+                      <input
+                        type="file"
+                        className="bg-white rounded p-2"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setSelectedProfile((prev) => ({
+                                ...prev,
+                                image: reader.result, // Base64 image data
+                              }));
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {selectedProfile?.profileImage && (
+                    <img
+                      src={
+                        selectedProfile.profileImage.startsWith("http")
+                          ? selectedProfile.profileImage
+                          : `${profileBaseURL}/${selectedProfile.profileImage}`
+                      }
+                      alt="Preview"
+                      className="mt-2 w-32 h-32 object-cover rounded-md"
+                    />
+                  )}
 
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  type="button"
-                  className="buttonGrey"
-                  onClick={() => setViewButtonModel(false)}
-                >
-                  Cancel
-                </button>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      type="button"
+                      className="buttonGrey"
+                      onClick={() => setViewButtonModel(false)}
+                    >
+                      Cancel
+                    </button>
 
-                <button type="submit" className="buttonTheme">
-                  Update
-                </button>
-              </div>
-            </form>
-          </Dialog.Panel>
-          </Transition.Child>
-        </div>
-      </Dialog>
-            </Transition>
-      
+                    <button type="submit" className="buttonTheme">
+                      Update
+                    </button>
+                  </div>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
+
 
 
       {/* ✅ Reusable Modal */}

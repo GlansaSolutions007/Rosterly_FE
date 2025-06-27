@@ -4,7 +4,7 @@ import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import FeedbackModal from "../Component/FeedbackModal";
 
-const ChangePassword = () => {
+const ChangePassword = ({ onClose }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -165,7 +165,10 @@ const ChangePassword = () => {
       </div>
       <FeedbackModal
         isOpen={feedbackModalOpen}
-        onClose={() => setFeedbackModalOpen(false)}
+        onClose={() =>{
+           setFeedbackModalOpen(false);
+           if (onClose) onClose();
+        }}
         message={feedbackMessage}
       />
     </div>

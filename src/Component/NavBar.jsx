@@ -155,9 +155,8 @@ const NavBar = ({ toggleSidebar }) => {
                   {({ active }) => (
                     <button
                       onClick={handleLogout}
-                      className={`block w-full px-4 py-2 text-left paragraph cursor-pointer text-black ${
-                        active ? "bg-yellow-200" : ""
-                      }`}
+                      className={`block w-full px-4 py-2 text-left paragraph cursor-pointer text-black ${active ? "bg-yellow-200" : ""
+                        }`}
                     >
                       Sign out
                     </button>
@@ -211,7 +210,7 @@ const NavBar = ({ toggleSidebar }) => {
                 </div>
 
                 <div className="py-5">
-                  <ChangePassword />
+                  <ChangePassword onClose={() => setIsChangePasswordOpen(false)} />
                 </div>
               </Dialog.Panel>
             </Transition.Child>
