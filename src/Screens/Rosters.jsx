@@ -449,106 +449,105 @@ const Rosters = () => {
   };
 
   //To publish the roster
-  const handlePublish = async () => {
-    const token = localStorage.getItem("token");
+ const handlePublish = async () => {
+  const token = localStorage.getItem("token");
 
-    if (!selectedLocation) {
-      setFeedbackMessage(
-        "Please select a location before publishing the roster."
-      );
-      setFeedbackModalOpen(true);
-      return false;
-    }
+  if (!selectedLocation) {
+    setFeedbackMessage("Please select a location before publishing the roster.");
+    setFeedbackModalOpen(true);
+    return false;
+  }
 
-    const startOfWeek = moment(currentWeek).day(3);
-    const weekKey = `${startOfWeek.format("YYYY-MM-DD")}_${selectedLocation}`;
-    const endOfWeek = startOfWeek.clone().add(6, "days");
+  const startOfWeek = moment(currentWeek).day(3); // Wednesday as start
+  const weekKey = `${startOfWeek.format("YYYY-MM-DD")}_${selectedLocation}`;
+  const endOfWeek = startOfWeek.clone().add(6, "days");
 
-    const formattedShifts = [];
+  const formattedShifts = [];
 
-    Object.entries(shiftsByEmployeeDay).forEach(([empId, daysObj]) => {
-      Object.entries(daysObj).forEach(([day, shifts]) => {
-        const dayDate = moment(day, "ddd, DD/MM");
-        if (
-          !dayDate.isBetween(
-            startOfWeek.clone().subtract(1, "day"),
-            endOfWeek.clone().add(1, "day")
-          )
-        ) {
-          return; // skip shifts not in current week
-        }
+  Object.entries(shiftsByEmployeeDay).forEach(([empId, daysObj]) => {
+    Object.entries(daysObj).forEach(([day, shifts]) => {
+      const dayDate = moment(day, "ddd, DD/MM");
+      if (!dayDate.isBetween(startOfWeek.clone().subtract(1, "day"), endOfWeek.clone().add(1, "day"))) {
+        return; // skip shifts outside the selected week
+      }
 
-        shifts.forEach((shift) => {
-          formattedShifts.push({
-            shiftId: shift.id,
-            user_id: empId,
-            date: moment(day, "ddd, DD/MM").format("YYYY-MM-DD"),
-            startTime: shift.time.split(" - ")[0],
-            endTime: shift.time.split(" - ")[1],
-            breakTime: shift.breakTime,
-            description: shift.description,
-            hrsRate: shift.hrsRate || "0.00",
-            percentRate: shift.percentRate || "0.00",
-            totalPay: shift.totalPay || "0.00",
-            status: "active",
-            location_id: selectedLocation,
-            totalHrs: calculateNumericTotalHours(shift.time, shift.breakTime),
-          });
+      shifts.forEach((shift) => {
+        const [startTime, endTime] = shift.time.split(" - ");
+
+        formattedShifts.push({
+          shiftId: shift.id,
+          user_id: parseInt(empId), // Ensure user_id is numeric
+          date: dayDate.format("YYYY-MM-DD"),
+          startTime: startTime,
+          endTime: endTime,
+          breakTime: parseFloat(shift.breakTime || 0),
+          description: shift.description || "",
+          hrsRate: shift.hrsRate || "0.00",
+          percentRate: shift.percentRate || "0.00",
+          totalPay: shift.totalPay || "0.00",
+          status: "active",
+          location_id: selectedLocation,
+          totalHrs: calculateNumericTotalHours(shift.time, shift.breakTime),
         });
       });
     });
+  });
 
-    if (formattedShifts.length === 0) {
-      setFeedbackMessage("No shifts to publish.");
-      setFeedbackModalOpen(true);
-      return false;
-    }
-    setWeekId(weekId);
-    setIsPublishing(true);
-    console.log("published", formattedShifts);
-    try {
-      const response = await axios.post(
-        `${baseURL}/porstRoster`,
-        {
-          rWeekStartDate: startOfWeek.format("YYYY-MM-DD"),
-          rWeekEndDate: endOfWeek.format("YYYY-MM-DD"),
-          locationId: selectedLocation,
-          rosters: formattedShifts,
-          rosterWeekId: weekId,
+  if (formattedShifts.length === 0) {
+    setFeedbackMessage("No shifts to publish.");
+    setFeedbackModalOpen(true);
+    return false;
+  }
+
+  setIsPublishing(true);
+
+  try {
+    const response = await axios.post(
+      `${baseURL}/postRoster`, // ✅ Fixed typo from `porstRoster`
+      {
+        rWeekStartDate: startOfWeek.format("YYYY-MM-DD"),
+        rWeekEndDate: endOfWeek.format("YYYY-MM-DD"),
+        locationId: selectedLocation,
+        rosters: formattedShifts,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      }
+    );
 
-      setFeedbackMessage("Roster published successfully!");
-      setFeedbackModalOpen(true);
-      console.log("Publish response:", response.data);
-      setRosterWeekId(response.data.roster_week_id);
-      // Add to published list
-      setPublishedRosters((prev) => [
-        ...prev,
-        { location_id: selectedLocation, days },
-      ]);
-      console.log("days", days);
-      setWeekMetaByDate((prev) => ({
-        ...prev,
-        [weekKey]: { weekId, isPublished: 1 },
-      }));
+    setFeedbackMessage("Roster published successfully!");
+    setFeedbackModalOpen(true);
 
-      fetchRoster();
-      return true;
-    } catch (error) {
-      console.error("Error publishing roster:", error);
-      setFeedbackMessage("Failed to publish roster. Please try again.");
-      setFeedbackModalOpen(true);
-      return false;
-    } finally {
-      setIsPublishing(false);
+    const rosterWeekIdFromAPI = response?.data?.roster_week_id;
+    if (rosterWeekIdFromAPI) {
+      setRosterWeekId(rosterWeekIdFromAPI);
     }
-  };
+
+    // Add to published list
+    setPublishedRosters((prev) => [
+      ...prev,
+      { location_id: selectedLocation, days },
+    ]);
+
+    setWeekMetaByDate((prev) => ({
+      ...prev,
+      [weekKey]: { weekId: rosterWeekIdFromAPI || null, isPublished: 1 },
+    }));
+
+    fetchRoster(); // refresh the view
+    return true;
+  } catch (error) {
+    console.error("Error publishing roster:", error);
+    setFeedbackMessage("Failed to publish roster. Please try again.");
+    setFeedbackModalOpen(true);
+    return false;
+  } finally {
+    setIsPublishing(false);
+  }
+};
+
 
   const fetchRoster = async () => {
     try {
