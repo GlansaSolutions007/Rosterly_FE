@@ -435,29 +435,29 @@ const People = () => {
     }
   };
   const handleLocationChange = async (locationId) => {
-  setSelectedLocation(locationId);
-  setLoading(true);
+    setSelectedLocation(locationId);
+    setLoading(true);
 
-  try {
-    if (locationId === "all") {
-      // If "All Locations" is selected, show all users
-      setFilteredProfiles(users);
-    } else {
-      const response = await axios.get(`${baseURL}/locations/${locationId}/users`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+    try {
+      if (locationId === "all") {
+        // If "All Locations" is selected, show all users
+        setFilteredProfiles(users);
+      } else {
+        const response = await axios.get(`${baseURL}/locations/${locationId}/users`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-      const locationUsers = response.data.data.map((item) => item.user); // Extract `user` from each record
-      setFilteredProfiles(locationUsers);
+        const locationUsers = response.data.data.map((item) => item.user); // Extract `user` from each record
+        setFilteredProfiles(locationUsers);
+      }
+    } catch (error) {
+      console.error("Error fetching users by location:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching users by location:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
 
@@ -476,7 +476,13 @@ const People = () => {
               setSelectedStatus(value);
 
               const statusFiltered = users.filter((user) => {
-                return value === "all" ? true : String(user.status) === value;
+                if (value === "all") {
+                  return true;
+                }
+                if (value === "manager") {
+                  return Number(user.role_id) === 2;
+                }
+                return String(user.status) === value;
               });
 
               setFilteredByStatus(statusFiltered);
@@ -485,8 +491,12 @@ const People = () => {
             }}
           >
             <option value="all">All Employees</option>
+            {Number(localStorage.getItem("role_id")) !== 2 && (
+              <option value="manager">Managers</option>
+            )}
             <option value="1">Active</option>
             <option value="0">Inactive</option>
+
           </select>
 
           {/* Location Filter */}
@@ -505,7 +515,7 @@ const People = () => {
           </select> */}
 
         </div>
-            
+
 
         {/* Right side: Search + Add */}
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
@@ -547,9 +557,8 @@ const People = () => {
             filteredProfiles.map((profile) => (
               <div key={profile.id} className="w-full">
                 <div
-                  className={`shadow-xl p-4 rounded-xl h-full flex flex-col justify-between ${
-                    profile.status === 1 ? "mSideBar" : "mSideBarInactive"
-                  }`}
+                  className={`shadow-xl p-4 rounded-xl h-full flex flex-col justify-between ${profile.status === 1 ? "mSideBar" : "mSideBarInactive"
+                    }`}
                 >
                   {/* Top Section: Image + Info */}
                   <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
@@ -569,7 +578,7 @@ const People = () => {
                       )}
                       <div className="text-left w-full min-w-0 overflow-hidden">
                         <h3 className="paragraphBold md:subheadingBold break-words">
-                          {profile.firstName} {profile.lastName}
+                          {profile.role_id === 2 ? `${profile.firstName} ${profile.lastName} (M)` : profile.role_id === 1 ? `${profile.firstName} ${profile.lastName} (A)` : `${profile.firstName} ${profile.lastName} (E)`}
                         </h3>
                         <p className="paragraphThin break-words">
                           {profile.email}
@@ -617,7 +626,7 @@ const People = () => {
                           setViewButtonModel(true);
                         }}
                       />
-                     
+
                       <HiTrash
                         title="Delete Profile"
                         className="textRed cursor-pointer p-2 rounded-md w-8 h-8 flex items-center justify-center"
@@ -634,7 +643,7 @@ const People = () => {
       {/* Add Employee Modal */}
       <Transition show={isModalOpen} as={React.Fragment}>
         <Dialog
-        as="div"
+          as="div"
           onClose={() => setIsModalOpen(false)}
           className="relative z-50 rounded-lg"
         >
@@ -905,7 +914,7 @@ const People = () => {
 
       {/* View Profile Modal */}
 
- <Transition show={viewButtonModel} as={React.Fragment}>
+      <Transition show={viewButtonModel} as={React.Fragment}>
         <Dialog
           as="div"
         onClose={() => setViewButtonModel(false)}
@@ -1086,26 +1095,26 @@ const People = () => {
                 />
               )}
 
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  type="button"
-                  className="buttonGrey"
-                  onClick={() => setViewButtonModel(false)}
-                >
-                  Cancel
-                </button>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      type="button"
+                      className="buttonGrey"
+                      onClick={() => setViewButtonModel(false)}
+                    >
+                      Cancel
+                    </button>
 
-                <button type="submit" className="buttonTheme">
-                  Update
-                </button>
-              </div>
-            </form>
-          </Dialog.Panel>
-          </Transition.Child>
-        </div>
-      </Dialog>
-            </Transition>
-      
+                    <button type="submit" className="buttonTheme">
+                      Update
+                    </button>
+                  </div>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
+
 
 
       {/* ✅ Reusable Modal */}
