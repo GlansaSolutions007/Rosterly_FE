@@ -460,6 +460,50 @@ const People = () => {
   };
 
 
+const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") => {
+  let filtered = allUsers;
+
+  // 🔹 Apply location filter
+  if (locationId !== "all") {
+    filtered = filtered.filter(
+      (user) => String(user.location_id) === String(locationId)
+    );
+  }
+
+  // 🔹 Apply status filter
+  if (statusValue !== "all") {
+    filtered = filtered.filter(
+      (user) => String(user.status) === String(statusValue)
+    );
+  }
+
+  // 🔹 Apply search keyword
+  if (keyword.trim() !== "") {
+    const lowerKeyword = keyword.toLowerCase();
+    filtered = filtered.filter((profile) => {
+      const fullName = `${profile.firstName} ${profile.lastName}`.toLowerCase();
+      const email = profile.email?.toLowerCase() || "";
+      const phone = profile.mobileNumber?.toString() || "";
+
+      return (
+        fullName.includes(lowerKeyword) ||
+        email.includes(lowerKeyword) ||
+        phone.includes(lowerKeyword)
+      );
+    });
+  }
+
+  setFilteredProfiles(filtered);
+};
+
+
+
+useEffect(() => {
+  applyCombinedFilters(filteredByStatus, selectedLocation, selectedStatus, searchTerm);
+}, [searchTerm]);
+
+
+
 
 
   return (
@@ -500,19 +544,20 @@ const People = () => {
           </select>
 
           {/* Location Filter */}
-         {/* <select
-            name="selectedLocation"
-            className="input flex-1 min-w-[140px]"
-            value={selectedLocation}
-            onChange={(e) => handleLocationChange(e.target.value)}
-          >
-            <option value="all">All Locations</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.location_name}
-              </option>
-            ))}
-          </select> */}
+        <select
+          name="selectedLocation"
+          className="input flex-1 min-w-[140px]"
+          value={selectedLocation}
+          onChange={(e) => handleLocationChange(e.target.value)}
+        >
+          <option value="all">All Locations</option>
+          {locations.map((loc) => (
+            <option key={loc.id} value={loc.id}>
+              {loc.location_name}
+            </option>
+          ))}
+        </select>
+
 
         </div>
 
