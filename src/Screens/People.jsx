@@ -11,6 +11,8 @@ import FeedbackModal from "../Component/FeedbackModal";
 import { FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import { capitalLetter } from "../Component/capitalLetter";
 import { FaUserSlash } from "react-icons/fa";
+import { differenceInYears } from 'date-fns';
+
 
 const People = () => {
   const baseURL = import.meta.env.VITE_BASE_URL;
@@ -277,50 +279,7 @@ const People = () => {
     setFilteredProfiles(filtered);
   };
 
-  // const handleSearch = (e) => {
-  //   const keyword = e.target.value.toLowerCase();
-  //   setSearchTerm(keyword);
-
-  //   const filtered = users.filter((profile) => {
-  //     const firstName = profile.firstName?.toLowerCase() || "";
-  //     const lastName = profile.lastName?.toLowerCase() || "";
-  //     const email = profile.email?.toLowerCase() || "";
-  //     const mobile = profile.mobileNumber?.toString().toLowerCase() || "";
-  //     const location = profile.location?.toLowerCase() || "";
-  //     const payrate = profile.payrate?.toString() || "";
-  //     const payratePercent = profile.payratePercent?.toString() || "";
-  //     const dob = profile.dob || "";
-
-  //     const matchesKeyword =
-  //       firstName.includes(keyword) ||
-  //       lastName.includes(keyword) ||
-  //       email.includes(keyword) ||
-  //       mobile.includes(keyword) ||
-  //       location.includes(keyword) ||
-  //       payrate.includes(keyword) ||
-  //       payratePercent.includes(keyword) ||
-  //       dob.includes(keyword);
-
-  //     const matchesLocation =
-  //       selectedLocation === "all" ||
-  //       location === selectedLocation.toLowerCase();
-
-  //     return matchesKeyword && matchesLocation;
-  //   });
-
-  //   setFilteredProfiles(filtered);
-  // };
-
-  // const handleFilter = () => {
-  //   const filtered = users.filter((user) => {
-  //     return selectedStatus === ""
-  //       ? true // show all if no status selected
-  //       : String(user.status) === selectedStatus; // match active/inactive
-  //   });
-
-  //   setFilteredProfiles(filtered);
-  // };
-
+ 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 1 ? 0 : 1;
 
@@ -461,7 +420,7 @@ const People = () => {
 
       console.log("User deleted:", response.data); // Add this for confirmation
 
-      setFeedbackMessage("User deleted successfully.");
+      setFeedbackMessage(response.data?.message || "User updated successfully");
       setShowConfirmButtons(false);
       fetchUsers(); // Refresh the user list
       setTimeout(() => {
@@ -531,7 +490,7 @@ const People = () => {
           </select>
 
           {/* Location Filter */}
-         <select
+         {/* <select
             name="selectedLocation"
             className="input flex-1 min-w-[140px]"
             value={selectedLocation}
@@ -543,7 +502,7 @@ const People = () => {
                 {loc.location_name}
               </option>
             ))}
-          </select>
+          </select> */}
 
         </div>
             
@@ -768,46 +727,67 @@ const People = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                      <label className="paragraphBold">Date of Birth</label>
-                      <DatePicker
-                        className="input"
-                        selected={createDate}
-                        onChange={(date) => {
-                          setCreateDate(date);
-                          setFormData({
-                            ...formData,
-                            dob: date?.toISOString().split("T")[0],
-                          });
-                        }}
-                        showYearDropdown
-                        showMonthDropdown
-                        dateFormat="dd/MM/yyyy" // or "yyyy-MM-dd" if you prefer
-                        scrollableYearDropdown
-                        yearDropdownItemNumber={100} // optional: sets how many years to show
-                        placeholderText="Select date"
-                      />
-                      {errors.dob && (
-                        <p className="text-red-500 text-sm">{errors.dob}</p>
-                      )}
+                      <label className="paragraphBold">Date of Birthss</label>
+                    <DatePicker
+                          className="input"
+                          selected={createDate}
+                          onChange={(date) => {
+                            if (!date) return;
+
+                            const age = differenceInYears(new Date(), date);
+                            setCreateDate(date); // Always show selected date
+
+                            if (age < 10) {
+                              // Set error, don't allow in form
+                              setErrors(prev => ({ ...prev, dob: "You are not eligible. Minimum age is 10 years." }));
+                              setFormData(prev => ({ ...prev, dob: "" }));
+                            } else {
+                              // Clear error and set value
+                              setErrors(prev => ({ ...prev, dob: "" }));
+                              setFormData(prev => ({ ...prev, dob: date.toISOString().split("T")[0] }));
+                            }
+                          }}
+                          showYearDropdown
+                          showMonthDropdown
+                          dateFormat="dd/MM/yyyy"
+                          scrollableYearDropdown
+                          yearDropdownItemNumber={100}
+                          placeholderText="Select date"
+                          maxDate={new Date()}
+                        />
+                        {errors.dob && (
+                          <p className="text-red-500 text-sm mt-1">{errors.dob}</p>
+                        )}
                     </div>
                     <div className="flex flex-col">
                       <label className="paragraphBold">Phone Number</label>
-                      <input
+                     <input
                         type="text"
                         className="input"
                         value={formData.mobileNumber}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          // Allow only numbers
+                          if (!/^\d*$/.test(value)) return;
+
+                          // Set value
                           setFormData({
                             ...formData,
-                            mobileNumber: e.target.value,
-                          })
-                        }
+                            mobileNumber: value,
+                          });
+
+                          // Validation
+                          if (value.length === 0) {
+                            setErrors({ ...errors, mobileNumber: "Phone number is required" });
+                          } else if (value.length !== 10) {
+                            setErrors({ ...errors, mobileNumber: "Phone number must be exactly 10 digits" });
+                          } else {
+                            setErrors({ ...errors, mobileNumber: "" }); // Clear error if valid
+                          }
+                        }}
+                        maxLength={10}
                       />
-                      {errors.mobileNumber && (
-                        <p className="text-red-500 text-sm">
-                          {errors.mobileNumber}
-                        </p>
-                      )}
                     </div>
                   </div>
 
@@ -1027,7 +1007,7 @@ const People = () => {
                   scrollableYearDropdown
                   yearDropdownItemNumber={100}
                   placeholderText="Select date"
-                />  [p  ]
+                />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="flex flex-col">

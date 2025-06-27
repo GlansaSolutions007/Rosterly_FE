@@ -171,7 +171,7 @@ const Location = () => {
 
       console.log("User deleted:", response.data); // Add this for confirmation
 
-      setFeedbackMessage("User deleted successfully.");
+      setFeedbackMessage(response.data?.message || "User updated successfully");
       setShowConfirmButtons(false);
       await getLocation(locationId);
       setTimeout(() => {
