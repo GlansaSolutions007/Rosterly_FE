@@ -15,6 +15,7 @@ const ChangePassword = () => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const baseURL = import.meta.env.VITE_BASE_URL;
   const token = localStorage.getItem("token");
@@ -71,7 +72,11 @@ const ChangePassword = () => {
       setFeedbackMessage(
         response.data?.message || "Password changed successfully."
       );
-      setFeedbackModalOpen(true);
+      if (response.data?.message) {
+        setIsChangePasswordOpen(false);
+        setFeedbackModalOpen(true);
+      }
+
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
