@@ -578,7 +578,7 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
             <div className="absolute inset-0 flex items-center justify-center">
               <FaUserSlash className="text-gray-400 text-3xl mr-2" />
               <p className="text-gray-500 text-lg text-center">
-                No employees found. Please add new employees.
+                No employees found.
               </p>
             </div>
           )}
