@@ -15,6 +15,7 @@ import Dashboard from "./Dashboard";
 import { getRoleId } from "../Component/RoleId";
 import axios from "axios";
 import { SlCalender } from "react-icons/sl";
+import { Dialog, Transition } from "@headlessui/react";
 
 const Rosterly = () => {
   const userName = localStorage.getItem("firstName");
@@ -50,7 +51,7 @@ const Rosterly = () => {
   const [locationName, setLocationName] = useState('');
   const [todayDate, setTodayDate] = useState('');
   const [todayShift, setTodayShift] = useState(null);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // for DB
@@ -115,6 +116,12 @@ const Rosterly = () => {
       .padStart(2, "0");
     const secs = (seconds % 60).toString().padStart(2, "0");
     return `${hrs}:${mins}:${secs}`;
+  };
+
+  const formatTimeForAPI = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    return date.toTimeString().split(" ")[0]; // Returns HH:mm:ss
   };
 
   const getWeekRange = (week) => {
@@ -300,6 +307,34 @@ const Rosterly = () => {
     setShiftEndTime(now);
     setIsShiftFinished(true);
     setActiveTimer(null);
+
+    // Prepare data for generatetimesheet endpoint
+    const shiftMinutes = Math.floor(accumulatedShiftRef.current / 1000 / 60); // Convert milliseconds to minutes
+    const breakMinutes = Math.floor(accumulatedBreakRef.current / 1000 / 60); // Convert milliseconds to minutes
+    const date = moment().format("YYYY-MM-DD"); // Current date in YYYY-MM-DD format
+    const startTime = formatTimeForAPI(shiftStartTime); // HH:mm:ss format
+    const endTime = formatTimeForAPI(now); // HH:mm:ss format
+
+    try {
+      const response = await axios.post(`${baseURL}/generatetimesheet`, {
+        user_id: loginId,
+        roster_id: todayShift?.rosterId,
+        date: date,
+        start_time: startTime,
+        end_time: endTime,
+        break_minutes: breakMinutes,
+        shift_minutes: shiftMinutes,
+      });
+
+      if (response.data.status) {
+        console.log("Timesheet generated successfully.");
+      } else {
+        console.warn("Failed to generate timesheet:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error generating timesheet:", error.message);
+    }
+
     localStorage.removeItem("shiftStartTime");
     localStorage.removeItem("shiftStartTimeRef");
     localStorage.removeItem("activeTimer");
@@ -307,8 +342,14 @@ const Rosterly = () => {
     localStorage.removeItem("accumulatedBreak");
     localStorage.removeItem("accumulatedShift");
     localStorage.removeItem("todayShift");
+
     await logAttendanceAction("end");
+    setIsModalOpen(true); // Open the modal after finishing the shift
   };
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
 
   useEffect(() => {
     const savedShiftStart = localStorage.getItem("shiftStartTime");
@@ -529,31 +570,34 @@ const Rosterly = () => {
         <Dashboard />
       ) : (
         <>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-indigo-950">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+            <div className="text-indigo-950 mt-2">
               {isAtStore ? (
                 <>
-                  <button
-                    onClick={handleShiftToggle}
-                    className={`buttonSuccess mr-2 w-full sm:w-auto `}
-                  >
-                    {activeTimer === "shift"
-                      ? "Shift Running..."
-                      : activeTimer === "break"
-                        ? "Resume Shift"
-                        : "Start Shift"}
-                  </button>
+                  {!isShiftFinished && (
+                    <>
+                      <button
+                        onClick={handleShiftToggle}
+                        className={`buttonSuccess mr-2 w-full sm:w-auto `}
+                      >
+                        {activeTimer === "shift"
+                          ? "Shift Running..."
+                          : activeTimer === "break"
+                            ? "Resume Shift"
+                            : "Start Shift"}
+                      </button>
 
-                  <button
-                    onClick={handleBreakToggle}
-                    className="buttonDanger mr-2 w-full sm:w-auto"
-                  >
-                    {activeTimer === "break" ? "Stop Break" : "Start Break"}
-                  </button>
-
+                      <button
+                        onClick={handleBreakToggle}
+                        className="buttonDanger mr-2 w-full sm:w-auto"
+                      >
+                        {activeTimer === "break" ? "Stop Break" : "Start Break"}
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={handleFinishShift}
-                    className="buttonTheme w-full sm:w-auto"
+                    className={`buttonFTheme w-full sm:w-auto ${isShiftFinished ? "cursor-not-allowed" : "cursor-pointer"}`}
                     disabled={isShiftFinished || !shiftElapsed}
                   >
                     {isShiftFinished ? "Shift Finished" : "Finish Shift"}
@@ -590,7 +634,7 @@ const Rosterly = () => {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: "spring", stiffness: 80 }}
-                className="flex flex-col justify-end flex-1 mt-10 text-right text-indigo-950"
+                className="flex flex-col justify-end flex-1 text-right text-indigo-950"
               >
                 <p className="subHeading">Date: {todayDate}</p>
                 {shiftStartTime && (
@@ -612,6 +656,64 @@ const Rosterly = () => {
                 </p>
               </motion.div>
             )}
+            <Transition show={isModalOpen} as={React.Fragment}>
+
+              <Dialog as="div" onClose={closeModal} className="relative z-50">
+                <Transition.Child
+                  as={React.Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="fixed inset-0 bg-black/50 transition-opacity duration-300" />
+                </Transition.Child>
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                  <Transition.Child
+                    as={React.Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95 translate-y-4"
+                    enterTo="opacity-100 scale-100 translate-y-0"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100 translate-y-0"
+                    leaveTo="opacity-0 scale-95 translate-y-4"
+                  >
+                    <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-white shadow-xl transition-all duration-300 ease-out scale-95 opacity-0 animate-fadeIn">
+                      <div className="flex flex-col p-6 ">
+                        <Dialog.Title className="text-lg font-semibold mb-4 text-indigo-950 text-center mt-2 bg-gray-200 rounded-lg py-2">
+                          Shift Summary
+                        </Dialog.Title>
+                        <p className="subHeading">Date: {todayDate}</p>
+                        {shiftStartTime && (
+                          <p className="subHeading ">
+                            Start Time: {formatDisplayTime(shiftStartTime)}
+                          </p>
+                        )}
+                        <p className="py-1 subHeading">
+                          Shift Time: <strong>{formatTime(shiftElapsed)} ({totalShiftHour} hrs)</strong>
+                        </p>
+                        {shiftEndTime && (
+                          <p className="subHeading ">
+                            End Time: {formatDisplayTime(shiftEndTime)}
+                          </p>
+                        )}
+                        <p className="subHeading ">
+                          Break Time: {formatTime(breakElapsed)} ({shiftBreak} min)
+                        </p>
+                        <button
+                          onClick={closeModal}
+                          className="mt-4 buttonSuccess"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </Dialog>
+            </Transition>
           </div>
 
           <div className="card w-full px-4 my-4">
