@@ -165,10 +165,8 @@ const TimeSheet = () => {
                 ? weekData
                 : Array(5).fill(null)
               ).map((item, index) => {
-                // Calculate the day name for empty rows
                 let dayLabel = item?.day;
                 if (!item) {
-                  // Get the correct day name based on index (Monday=0)
                   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
                   dayLabel = daysOfWeek[index] || "";
                 }

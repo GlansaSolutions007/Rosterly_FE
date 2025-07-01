@@ -135,101 +135,87 @@ const NotificationPage = () => {
   }
 
 
-  return (
-    <div className="rounded-md  ">
-      <div className="flex justify-between items-center mb-4">
-        {/* <h2 className="heading">Notifications</h2> */}
-        {/* <button className="buttonGrey">Clear All</button> */}
+return (
+  <div className="w-full max-w-5xl mx-auto px-3 sm:px-6 py-4">
+    <div className="mb-4">
+      {/* Optional heading or action buttons */}
+    </div>
+
+    {notifications.length === 0 ? (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <p className="text-gray-500 text-center text-base">No notifications found.</p>
       </div>
+    ) : (
+      notifications.map((note) => {
+        const { id, data } = note;
+        const innerData = data;
 
-      {notifications.length === 0 ? (
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500 subHeading text-center">No notifications found.</p>
-        </div>
-      ) : (
-        notifications.map((note) => {
-          const { id, data } = note;
-          const innerData = data;
+        return (
+          <div
+            key={id}
+            className={`bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm transition-all duration-300 ease-in-out 
+              ${removingId === id ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
+              {/* Left content */}
+              <div className="flex-1 space-y-1">
+                <div className="text-indigo-900 font-semibold text-base break-words flex flex-wrap items-center gap-2">
+                  <span>{innerData.userName || firstName}</span>
+                  <span>{innerData.message || "User"}</span>
 
-          return (
-            // <div
-            //   key={id}
-            //   className="bg-white shadow-sm border border-gray-200 rounded-lg p-4 mb-4 flex justify-between items-start"
-            // >
-            <div
-              key={id}
-              className={`bg-white shadow-sm border border-gray-200 rounded-lg p-4 mb-4 flex justify-between items-start transition-all duration-300 ease-in-out ${removingId === id
-                ? "opacity-0 scale-95"
-                : "opacity-100 scale-100"
-                }`}
-            >
-              <div>
-                <div className="paragraphBold">
-                  <div className="flex items-center gap-2">
-                    <p className="text-lg font-bold text-indigo-900 mb-1">
-                      {innerData.userName || `${firstName}`}
-                    </p>
-                    {innerData.message || "User"}
-
-                    {/* Recurring Unavailability */}
-                    {innerData.day ? (
-                      <>
-                        {(innerData.fromDT && innerData.toDT) ? (
-                          <>
-                            <strong className="notClass">
-                              {formatDateTime(innerData.fromDT, true)}
-                            </strong>
-                            <strong className="notClass">
-                              to {formatDateTime(innerData.toDT, true)}
-                            </strong>
-                          </>
-                        ) : (
-                          <strong className="notClass">for All Day</strong>
-                        )}
-                        <span className="bg-rosterGreen text-indigo-900 px-2 py-1 rounded-full">
-                          Day: {innerData.day}
+                  {innerData.day ? (
+                    <>
+                      {(innerData.fromDT && innerData.toDT) ? (
+                        <>
+                          <span className="text-gray-700 font-medium">
+                            {formatDateTime(innerData.fromDT, true)}
+                          </span>
+                          <span className="text-gray-700 font-medium">
+                            to {formatDateTime(innerData.toDT, true)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="bgTablePub px-2 rounded-full font-medium">for All Day</span>
+                      )}
+                      <span className="bg-rosterGreen text-indigo-900 px-2 py-0.5 rounded-full text-xs">
+                        Day: {innerData.day}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {innerData.fromDT && (
+                        <span className="text-gray-700 font-medium">
+                          {formatDateTime(innerData.fromDT)}
                         </span>
-                      </>
-                    ) : (
-                      // One-time unavailability
-                      <>
-                        {innerData.fromDT && (
-                          <strong className="notClass">
-                            {formatDateTime(innerData.fromDT)}
-                          </strong>
-                        )}
-                        {innerData.toDT && (
-                          <strong className="notClass">
-                            to {formatDateTime(innerData.toDT)}
-                          </strong>
-                        )}
-                      </>
-                    )}
-                  </div>
+                      )}
+                      {innerData.toDT && (
+                        <span className="text-gray-700 font-medium">
+                          to {formatDateTime(innerData.toDT)}
+                        </span>
+                      )}
+                    </>
+                  )}
                 </div>
 
-                <div className="paragraphThin">
-                  {innerData.reason ? (
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold text-indigo-900 mb-1">
-                        Reason:
-                      </p>
-                      <p>{innerData.reason}</p>
-                    </div>
-                  ) : null}
-                  {/* Reason: {innerData.reason || "No reason provided"} */}
-                </div>
+                {/* Reason */}
+                {innerData.reason && (
+                  <p className="text-sm  break-words">
+                    <strong className="text-indigo-900">Reason:</strong>{innerData.reason}
+                  </p>
+                )}
               </div>
-              {innerData.status != null ? null : (
-                <div className="flex gap-2 mt-2 sm:mt-0">
+
+              {/* Buttons */}
+              {innerData.status == null && (
+                <div className="flex flex-col sm:flex-row gap-2 sm:mt-0 w-full sm:w-auto">
                   <button
-                    className="buttonSuccess"
+                    className="buttonSuccess w-full sm:w-auto"
                     onClick={() => handleActions(id, 1)}
                   >
                     Approve
                   </button>
                   <button
-                    className="buttonDanger"
+                    className="buttonDanger w-full sm:w-auto"
                     onClick={() => handleActions(id, 2)}
                   >
                     Deny
@@ -237,18 +223,21 @@ const NotificationPage = () => {
                 </div>
               )}
             </div>
-          );
-        })
-      )}
-      <FeedbackModal
-        isOpen={feedbackModalOpen}
-        onClose={() => setFeedbackModalOpen(false)}
-        message={feedbackMessage}
-        onConfirm={handleNotificationAction}
-        showConfirmButtons={showConfirmButtons}
-      />
-    </div>
-  );
+          </div>
+        );
+      })
+    )}
+
+    <FeedbackModal
+      isOpen={feedbackModalOpen}
+      onClose={() => setFeedbackModalOpen(false)}
+      message={feedbackMessage}
+      onConfirm={handleNotificationAction}
+      showConfirmButtons={showConfirmButtons}
+    />
+  </div>
+);
+
 };
 
 export default NotificationPage;
