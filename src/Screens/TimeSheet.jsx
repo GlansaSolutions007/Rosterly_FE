@@ -13,19 +13,29 @@ const TimeSheet = () => {
   const [locatedEmployees, setLocatedEmployees] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("default");
 
+
   const getWeekRange = (week) => {
-    const startOfWeek = moment(week).startOf("isoWeek").format("DD MMM");
-    const endOfWeek = moment(week).endOf("isoWeek").format("DD MMM");
-    return `${startOfWeek} - ${endOfWeek}`;
+    const startOfWeek = moment(week).day(3); // 3 = Wednesday
+    const endOfWeek = startOfWeek.clone().add(6, "days");
+    return `${startOfWeek.format("DD MMM")} - ${endOfWeek.format("DD MMM")}`;
   };
 
   const handlePrevWeek = () => {
-    setCurrentWeek((prev) => moment(prev).subtract(1, "week"));
+    setCurrentWeek((prev) => moment(prev).subtract(7, "days")); // subtract full week
   };
 
   const handleNextWeek = () => {
-    setCurrentWeek((prev) => moment(prev).add(1, "week"));
+    setCurrentWeek((prev) => moment(prev).add(7, "days")); // add full week
   };
+
+  const getDaysForWeek = (week) => {
+    const start = moment(week).day(3); // Start from Wednesday
+    return Array.from({ length: 7 }, (_, i) =>
+      start.clone().add(i, "days").format("ddd, DD/MM")
+    );
+  };
+
+  const days = getDaysForWeek(currentWeek);
 
   const handleLocation = (e) => {
     const newLocationId = e.target.value;
@@ -163,16 +173,15 @@ const TimeSheet = () => {
             <tbody className="divide-y divide-gray-200">
               {(selectedEmployeeId !== "default"
                 ? weekData
-                : Array(5).fill(null)
+                : Array(7).fill(null)
               ).map((item, index) => {
                 let dayLabel = item?.day;
                 if (!item) {
-                  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-                  dayLabel = daysOfWeek[index] || "";
+                  dayLabel = days[index] || "";
                 }
                 return (
                   <tr key={index}>
-                    <td className="px-6 py-3 font-medium">
+                    <td className="px-6 py-3 paragraphBold">
                       {dayLabel}
                     </td>
                     <td className="px-6 py-3 text-center">
@@ -186,8 +195,8 @@ const TimeSheet = () => {
                         ? item.day === "Wednesday"
                           ? "9 hrs"
                           : item.day === "Tuesday"
-                          ? "7 hrs"
-                          : "8 hrs"
+                            ? "7 hrs"
+                            : "8 hrs"
                         : "—"}
                     </td>
                     <td className="px-6 py-3 text-center">
@@ -195,8 +204,8 @@ const TimeSheet = () => {
                         ? item.day === "Wednesday"
                           ? "1 hr"
                           : item.day === "Monday"
-                          ? "0.5 hrs"
-                          : "—"
+                            ? "0.5 hrs"
+                            : "—"
                         : "—"}
                     </td>
                     <td className="px-6 py-3 text-center">
@@ -204,8 +213,8 @@ const TimeSheet = () => {
                         ? item.day === "Tuesday"
                           ? "1 hr"
                           : item.day === "Friday"
-                          ? "1.5 hrs"
-                          : "—"
+                            ? "1.5 hrs"
+                            : "—"
                         : "—"}
                     </td>
                     <td className="px-6 py-3 text-right font-semibold">

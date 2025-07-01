@@ -324,6 +324,7 @@ const Rosterly = () => {
         end_time: endTime,
         break_minutes: breakMinutes,
         shift_minutes: shiftMinutes,
+        location: todayShift?.location_Id,
       });
 
       if (response.data.status) {
