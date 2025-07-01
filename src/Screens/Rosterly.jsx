@@ -211,82 +211,72 @@ const Rosterly = () => {
 
     const now = Date.now();
 
-    // If shift is starting for the first time
     if (!shiftStartTime) {
       setShiftStartTime(now);
       localStorage.setItem("shiftStartTime", now);
+      shiftStartTimeRef.current = now;
+      localStorage.setItem("shiftStartTimeRef", now.toString());
       await logAttendanceAction("start");
-    }
-
-    // If currently on break, end break first
-    if (activeTimer === "break" && breakStartTimeRef.current) {
+    } else if (activeTimer === "break" && breakStartTimeRef.current) {
+      // End break
       const breakElapsed = now - breakStartTimeRef.current;
       accumulatedBreakRef.current += breakElapsed;
-      localStorage.setItem("accumulatedBreak", accumulatedBreakRef.current);
-
+      localStorage.setItem("accumulatedBreak", accumulatedBreakRef.current.toString());
+      setBreakElapsed(Math.floor(accumulatedBreakRef.current / 1000));
       breakStartTimeRef.current = null;
       localStorage.removeItem("breakStartTime");
-
       await logAttendanceAction("break_end");
     }
 
-    // Now start the shift
-    stopTimer(); // stops any active timer
-    shiftStartTimeRef.current = now;
-
+    stopTimer();
+    if (!shiftStartTimeRef.current) {
+      shiftStartTimeRef.current = now;
+      localStorage.setItem("shiftStartTimeRef", now.toString());
+    }
     setActiveTimer("shift");
     localStorage.setItem("activeTimer", "shift");
-    localStorage.setItem("shiftStartTimeRef", now.toString());
-
     startTimer("shift");
   };
-
 
   const handleBreakToggle = async () => {
     if (isShiftFinished) return;
 
     const now = Date.now();
 
-    if (activeTimer === "shift") {
-      const now = Date.now();
+    if (activeTimer === "shift" && shiftStartTimeRef.current) {
+      // Pause shift
       const elapsed = now - shiftStartTimeRef.current;
-
       accumulatedShiftRef.current += elapsed;
-      localStorage.setItem("accumulatedShift", accumulatedShiftRef.current);
-
+      localStorage.setItem("accumulatedShift", accumulatedShiftRef.current.toString());
+      setShiftElapsed(Math.floor(accumulatedShiftRef.current / 1000));
       shiftStartTimeRef.current = null;
+      localStorage.removeItem("shiftStartTimeRef");
       stopTimer();
     }
 
-    if (activeTimer === "break") {
+    if (activeTimer === "break" && breakStartTimeRef.current) {
       // End break
-      stopTimer();
       const elapsed = now - breakStartTimeRef.current;
-
-      // Update accumulated break time
       accumulatedBreakRef.current += elapsed;
-      localStorage.setItem("accumulatedBreak", accumulatedBreakRef.current);
-
+      localStorage.setItem("accumulatedBreak", accumulatedBreakRef.current.toString());
       setBreakElapsed(Math.floor(accumulatedBreakRef.current / 1000));
       breakStartTimeRef.current = null;
       localStorage.removeItem("breakStartTime");
+      await logAttendanceAction("break_end");
 
+      // Resume shift
+      shiftStartTimeRef.current = now;
+      localStorage.setItem("shiftStartTimeRef", now.toString());
       setActiveTimer("shift");
       localStorage.setItem("activeTimer", "shift");
-
-      await logAttendanceAction("break_end");
       startTimer("shift");
     } else {
       // Start break
       stopTimer();
-
       breakStartTimeRef.current = now;
       localStorage.setItem("breakStartTime", now.toString());
-
       setActiveTimer("break");
       localStorage.setItem("activeTimer", "break");
-
-      // setBreakElapsed(Math.floor(accumulatedBreakRef.current / 1000));
       await logAttendanceAction("break_start");
       startTimer("break");
     }
@@ -294,23 +284,29 @@ const Rosterly = () => {
 
   const handleFinishShift = async () => {
     stopTimer();
-    const end = Date.now();
+    const now = Date.now();
     if (shiftStartTimeRef.current) {
-      const elapsed = end - shiftStartTimeRef.current;
+      const elapsed = now - shiftStartTimeRef.current;
       accumulatedShiftRef.current += elapsed;
+      setShiftElapsed(Math.floor(accumulatedShiftRef.current / 1000));
+    }
+    if (breakStartTimeRef.current) {
+      const elapsed = now - breakStartTimeRef.current;
+      accumulatedBreakRef.current += elapsed;
+      setBreakElapsed(Math.floor(accumulatedBreakRef.current / 1000));
+      breakStartTimeRef.current = null;
     }
 
-    setShiftElapsed(Math.floor(accumulatedShiftRef.current / 1000));
-    setShiftEndTime(end);
+    setShiftEndTime(now);
     setIsShiftFinished(true);
     setActiveTimer(null);
     localStorage.removeItem("shiftStartTime");
+    localStorage.removeItem("shiftStartTimeRef");
     localStorage.removeItem("activeTimer");
     localStorage.removeItem("breakStartTime");
     localStorage.removeItem("accumulatedBreak");
     localStorage.removeItem("accumulatedShift");
     localStorage.removeItem("todayShift");
-
     await logAttendanceAction("end");
   };
 
@@ -323,57 +319,43 @@ const Rosterly = () => {
     const storedLocation = localStorage.getItem("locationName");
     const storedDate = localStorage.getItem("todayDate");
     const storedTodayShift = localStorage.getItem("todayShift");
-    const storedShiftStart = localStorage.getItem("shiftStartTimeRef");
-    const totalHours = localStorage.getItem('totalShiftHour');
-    const breakTime = localStorage.getItem('shiftBreak');
+    const storedShiftStartRef = localStorage.getItem("shiftStartTimeRef");
+    const totalHours = localStorage.getItem("totalShiftHour");
+    const breakTime = localStorage.getItem("shiftBreak");
 
     if (breakTime) setShiftBreak(breakTime);
     if (totalHours) setTotalShiftHour(totalHours);
-
-    if (storedShiftStart) {
-      shiftStartTimeRef.current = parseInt(storedShiftStart, 10);
-
-    }
-    if (storedTodayShift) {
-      setTodayShift(JSON.parse(storedTodayShift));
-    }
+    if (storedTodayShift) setTodayShift(JSON.parse(storedTodayShift));
     if (storedLocation) setLocationName(storedLocation);
     if (storedDate) setTodayDate(storedDate);
 
     if (savedAccumulatedShift) {
       accumulatedShiftRef.current = parseInt(savedAccumulatedShift, 10);
-    }
-
-    if (savedShiftStart && savedActiveTimer === "shift") {
-      shiftStartTimeRef.current = parseInt(savedShiftStart, 10);
-      const now = Date.now();
-      const elapsed = now - shiftStartTimeRef.current;
-      setShiftElapsed(Math.floor((accumulatedShiftRef.current + elapsed) / 1000));
-    }
-
-    if (savedShiftStart) {
-      const shiftStart = parseInt(savedShiftStart, 10);
-      shiftStartTimeRef.current = shiftStart;
-      setShiftStartTime(shiftStart);
-      const elapsed = Math.floor((Date.now() - shiftStart) / 1000);
-      setShiftElapsed(elapsed);
-      setIsAtStore(true);
+      setShiftElapsed(Math.floor(accumulatedShiftRef.current / 1000));
     }
 
     if (savedBreakElapsed) {
-      const breakTotal = parseInt(savedBreakElapsed, 10);
-      accumulatedBreakRef.current = breakTotal;
-      setBreakElapsed(Math.floor(breakTotal / 1000));
+      accumulatedBreakRef.current = parseInt(savedBreakElapsed, 10);
+      setBreakElapsed(Math.floor(accumulatedBreakRef.current / 1000));
+    }
+
+    if (savedShiftStart) {
+      setShiftStartTime(parseInt(savedShiftStart, 10));
+    }
+
+    if (storedShiftStartRef && savedActiveTimer === "shift") {
+      shiftStartTimeRef.current = parseInt(storedShiftStartRef, 10);
+      setActiveTimer("shift");
+      startTimer("shift");
     }
 
     if (savedBreakStart && savedActiveTimer === "break") {
-      const breakStart = parseInt(savedBreakStart, 10);
-      breakStartTimeRef.current = breakStart;
+      breakStartTimeRef.current = parseInt(savedBreakStart, 10);
+      setActiveTimer("break");
+      startTimer("break");
     }
 
-    if (savedActiveTimer === "shift" || savedActiveTimer === "break") {
-      setActiveTimer(savedActiveTimer);
-      startTimer(savedActiveTimer);
+    if (savedActiveTimer) {
       setIsAtStore(true);
     }
   }, []);
@@ -384,19 +366,13 @@ const Rosterly = () => {
         const now = Date.now();
 
         if (activeTimer === "shift" && shiftStartTimeRef.current) {
-          const elapsed = now - shiftStartTimeRef.current;
-          setShiftElapsed(Math.floor((accumulatedShiftRef.current + elapsed) / 1000));
+          stopTimer();
+          startTimer("shift");
+        } else if (activeTimer === "break" && breakStartTimeRef.current) {
+          stopTimer();
+          startTimer("break");
         }
-
-        if (activeTimer === "break" && breakStartTimeRef.current) {
-          const elapsed = now - breakStartTimeRef.current;
-          setBreakElapsed(Math.floor((accumulatedBreakRef.current + elapsed) / 1000));
-        }
-
-        stopTimer(); // Clear old interval
-        if (activeTimer) startTimer(activeTimer); // Will only start if none exists
       } else {
-        // When tab is hidden, stop the timer to prevent inaccurate increments
         stopTimer();
       }
     };
@@ -408,7 +384,7 @@ const Rosterly = () => {
   }, [activeTimer]);
 
   useEffect(() => {
-    return () => stopTimer(); // Cleanup on unmount
+    return () => stopTimer();
   }, []);
 
   const formatDisplayTime = (timestamp) => {
@@ -590,7 +566,7 @@ const Rosterly = () => {
                   {todayShiftExists ? (
                     <>
                       <button
-                        className="buttonSuccess"
+                        className="buttonSuccess mt-2"
                         disabled={isCheckingLocation}
                         onClick={checkLocation}
                       >
@@ -638,82 +614,6 @@ const Rosterly = () => {
             )}
           </div>
 
-          {/* <div className="card w-full px-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-              <h2 className="subHeading text-lg sm:text-xl text-indigo-900">
-                Shift Details
-              </h2>
-              <div className="flex items-center justify-center bg-white rounded-lg text-sm font-semibold text-gray-900 w-full sm:w-fit px-2 py-1 border border-gray-300 shadow-sm">
-                <FaAngleLeft
-                  className="text-gray-800 hover:text-gray-950 cursor-pointer"
-                  size={16}
-                  onClick={handlePrevWeek}
-                />
-                <span className="mx-2 paragraphBold">
-                  {displayRange} ({startDate} to {endDate})
-                </span>
-                <FaAngleRight
-                  className="text-gray-800 hover:text-gray-950 cursor-pointer"
-                  size={16}
-                  onClick={handleNextWeek}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-[repeat(auto-fit,_minmax(220px,_1fr))] gap-4 justify-center text-center sm:text-left">
-              {days.map((day, i) => {
-                const fullDate = moment(rWeekStartDate)
-                  .add(i, "days")
-                  .format("YYYY-MM-DD");
-
-                const shift = shiftData.find((item) => item.date === fullDate);
-                return (
-                  <div key={i} className="mt-2 mx-auto">
-                    <div className={`${shift ? 'cardYellow' : 'cardGrey'}`}>
-                      <p className="subHeading">{day}</p>
-                      {shift ? (
-                        <>
-                          <p className="paragraph">
-                            Shift Time: {shift.startTime} - {shift.endTime}
-                          </p>
-                          <p className="paragraph">
-                            Total Hours: {shift.totalHrs} hrs
-                          </p>
-                          <p className="paragraph">
-                            Break Time: {shift.breakTime} min
-                          </p>
-                        </>
-                      ) : (
-                        <p className="headingBold text-gray-500">
-                          No Shift Assigned
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              <div className="mt-2 w-full col-span-1 sm:col-span-2 mx-auto">
-                <div className="p-4 bg-gray-100 border rounded-lg h-full flex flex-col justify-between">
-                  <div>
-                    <h2 className="text-indigo-900 heading">
-                      Give Your <strong>Unavailability</strong>
-                    </h2>
-                    <h2 className="text-indigo-900 subHeading">
-                      date and time.
-                    </h2>
-                  </div>
-                  <div className="flex justify-end mt-4">
-                    <button
-                      className="buttonSuccessActive w-full sm:w-1/2"
-                      onClick={unavailabilityHandler}
-                    >
-                      Select Your Unavailability
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> */}
           <div className="card w-full px-4 my-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
               <h2 className="subHeading text-lg sm:text-xl text-indigo-900">

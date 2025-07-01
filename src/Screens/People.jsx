@@ -244,42 +244,15 @@ console.log(currentUserRole);
     setIsModalOpen(true); // ✅ Then show modal
   };
 
-  useEffect(() => {
-    applySearchFilter(searchTerm, filteredByStatus);
-  }, [searchTerm, filteredByStatus]);
+
 
   const handleSearch = (e) => {
     const keyword = e.target.value.toLowerCase();
     setSearchTerm(keyword);
-    applySearchFilter(keyword, filteredByStatus);
+
+    applyCombinedFilters(users, selectedLocation, selectedStatus, keyword);
   };
 
-  const applySearchFilter = (keyword, dataToFilter) => {
-    const filtered = dataToFilter.filter((profile) => {
-      const firstName = profile.firstName?.toLowerCase() || "";
-      const lastName = profile.lastName?.toLowerCase() || "";
-      const email = profile.email?.toLowerCase() || "";
-      const mobile = profile.mobileNumber?.toString().toLowerCase() || "";
-      // const location = profile.location?.toLowerCase() || "";
-      const payrate = profile.payrate?.toString() || "";
-      const payratePercent = profile.payratePercent?.toString() || "";
-      const dob = profile.dob || "";
-
-      const matchesKeyword =
-        firstName.includes(keyword) ||
-        lastName.includes(keyword) ||
-        email.includes(keyword) ||
-        mobile.includes(keyword) ||
-        // location.includes(keyword) ||
-        payrate.includes(keyword) ||
-        payratePercent.includes(keyword) ||
-        dob.includes(keyword);
-
-      return matchesKeyword;
-    });
-
-    setFilteredProfiles(filtered);
-  };
 
  
   const handleToggleStatus = async (id, currentStatus) => {
@@ -505,15 +478,15 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
   }
 
   setFilteredProfiles(filtered);
-  console.log("Applied filters:" , { locationId, statusValue, keyword });
+  console.log("Applied filters:" , { locationId, statusValue, keyword  , allUsers });
   console.log("Filtered profiles:", filtered);
 };
 
 
 
-useEffect(() => {
-  applyCombinedFilters(filteredByStatus, selectedLocation, selectedStatus, searchTerm);
-}, [searchTerm]);
+// useEffect(() => {
+//   applyCombinedFilters(filteredByStatus, selectedLocation, selectedStatus, searchTerm);
+// }, [searchTerm]);
 
 
 
@@ -605,7 +578,7 @@ useEffect(() => {
             <div className="absolute inset-0 flex items-center justify-center">
               <FaUserSlash className="text-gray-400 text-3xl mr-2" />
               <p className="text-gray-500 text-lg text-center">
-                No employees found. Please add new employees.
+                No employees found.
               </p>
             </div>
           )}
