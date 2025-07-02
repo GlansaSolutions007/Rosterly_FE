@@ -175,7 +175,7 @@ return (
                           </span>
                         </>
                       ) : (
-                        <span className="bgTablePub px-2 rounded-full font-medium">for All Day</span>
+                        <span className="bgTablePub px-2 rounded-full font-medium text-white">for All Day</span>
                       )}
                       <span className="bg-rosterGreen text-indigo-900 px-2 py-0.5 rounded-full text-xs">
                         Day: {innerData.day}

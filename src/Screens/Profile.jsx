@@ -140,7 +140,7 @@ const Profile = () => {
                 type="text"
                 value={user.name}
                 onChange={(e) => setUser({ ...user, name: e.target.value })}
-                className="input w-full border border-gray-500"
+                className="input w-full border border-gray-500 text-gray-600 cursor-not-allowed"
                 readOnly
               />
             </div>
@@ -151,7 +151,7 @@ const Profile = () => {
                 type="text"
                 value={user.email}
                 onChange={(e) => setUser({ ...user, email: e.target.value })}
-                className="input w-full border border-gray-500"
+                className="input w-full border border-gray-500 text-gray-600 cursor-not-allowed"
                 readOnly
               />
             </div>
