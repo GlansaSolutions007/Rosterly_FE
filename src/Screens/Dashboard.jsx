@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [employees, setEmployees] = useState(0);
   const [locations, setLocations] = useState(0);
   const [notifications, setNotifications] = useState(0);
+  const [rosterCount, setRosterCount] = useState(0);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -27,9 +28,9 @@ export default function Dashboard() {
         });
         const users = res.data?.data || [];
 
-        setUsers(users.filter((user)=>user.role_id!==1).length);
+        setUsers(users.filter((user) => user.role_id !== 1).length);
         setManagers(users.filter((user) => user.role_id === 2).length);
-        setEmployees(users.filter((user) => user.role_id === 3).length);     
+        setEmployees(users.filter((user) => user.role_id === 3).length);
 
       } catch (error) {
         console.log("Error fetching users:", error);
@@ -54,11 +55,11 @@ export default function Dashboard() {
             "Content-Type": "application/json",
           },
         });
-      
-        const fetchedNotification = response.data?.notifications || [];     
+
+        const fetchedNotification = response.data?.notifications || [];
 
         setNotifications(fetchedNotification.length);
-      
+
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
@@ -68,6 +69,26 @@ export default function Dashboard() {
 
     fetchUsers();
     fetchLocations();
+  }, []);
+
+  const rosterFetch = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/rosterfetch`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const rosters = response.data?.data || [];
+      const rosterCounts = rosters.length;
+      setRosterCount(rosterCounts);
+      console.log("Rosters data:", rosters);
+    } catch (error) {
+      console.error("Error fetching rosters:", error);
+    }
+  };
+
+  useEffect(() => {
+    rosterFetch();
   }, []);
 
   const stats = [
@@ -80,16 +101,17 @@ export default function Dashboard() {
     },
     {
       title: "Active Rosters",
-      value: 34,
+      value: rosterCount,
       bg: "bg-rosterGreen",
       icon: <MdAssignment className="text-3xl text-black-100" />,
+      link: "/roster",
     },
     {
       title: "Pending Approvals",
       value: notifications,
       bg: "bg-yellow-200",
       icon: <MdOutlinePendingActions className="text-3xl text-black-100" />,
-      link:'/notification'
+      link: '/notification'
     },
     {
       title: "Managers",
@@ -110,7 +132,7 @@ export default function Dashboard() {
       value: employees,
       bg: "bg-red-300",
       icon: <BsPeopleFill className="text-3xl text-black-100" />,
-      link:'/employee'
+      link: '/employee'
     },
   ];
 
@@ -129,7 +151,7 @@ export default function Dashboard() {
         {stats.map((item, index) => (
           <motion.div
             key={index}
-            className={`rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-300 ${item.bg} ${item.link?"cursor-pointer":""}`}
+            className={`rounded-2xl p-5 shadow-md hover:shadow-xl transition-all duration-300 ${item.bg} ${item.link ? "cursor-pointer" : ""}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.5 }}
