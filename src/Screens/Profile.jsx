@@ -27,7 +27,7 @@ const Profile = () => {
           },
         });
 
-        const userData = response.data.data;
+        const userData = response.data;
 
         setUser({
           name: `${userData.firstName} ${userData.lastName}`,

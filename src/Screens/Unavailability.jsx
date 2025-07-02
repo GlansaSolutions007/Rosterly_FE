@@ -55,7 +55,8 @@ const Unavailability = () => {
       });
       // setSelectToNotify(response.data.data);
 
-      const userData = response?.data?.data;
+      const userData = response?.data;
+      console.log("User for un data:", userData);
       if (userData) {
         setSelectToNotify([
           {
@@ -71,19 +72,6 @@ const Unavailability = () => {
       console.error("Error fetching notifying manager:", error);
     }
   };
-
-  useEffect(() => {
-    axios
-      .get(`${baseURL}/get-managers`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setManagers(res.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching managers", err);
-      });
-  }, []);
 
   useEffect(() => {
     fetchNotifyingManager();

@@ -11,8 +11,7 @@ import FeedbackModal from "../Component/FeedbackModal";
 import { FaToggleOff, FaToggleOn } from "react-icons/fa6";
 import { capitalLetter } from "../Component/capitalLetter";
 import { FaUserSlash } from "react-icons/fa";
-import { differenceInYears } from 'date-fns';
-
+import { differenceInYears } from "date-fns";
 
 const People = () => {
   const baseURL = import.meta.env.VITE_BASE_URL;
@@ -164,11 +163,9 @@ const People = () => {
     try {
       const currentUserId = Number(localStorage.getItem("id"));
       const currentUserRole = Number(localStorage.getItem("role_id"));
-console.log(currentUserRole);
+      console.log(currentUserRole);
       const endpoint =
-        currentUserRole === 1
-          ? `${baseURL}/users`
-          : `${baseURL}/users/login/${currentUserId}`;
+        currentUserRole === 1 ? `${baseURL}/users` : `${baseURL}/users/manager`;
 
       const response = await axios.get(endpoint, {
         headers: {
@@ -232,7 +229,10 @@ console.log(currentUserRole);
       });
       // console.log("Locations fetched:", response.data);
       setLocations(response.data);
-      console.log(response.data.map(item => item.id), 'only IDs');
+      console.log(
+        response.data.map((item) => item.id),
+        "only IDs"
+      );
     } catch (error) {
       console.error("Error fetching locations:", error);
     }
@@ -244,8 +244,6 @@ console.log(currentUserRole);
     setIsModalOpen(true); // ✅ Then show modal
   };
 
-
-
   const handleSearch = (e) => {
     const keyword = e.target.value.toLowerCase();
     setSearchTerm(keyword);
@@ -253,8 +251,6 @@ console.log(currentUserRole);
     applyCombinedFilters(users, selectedLocation, selectedStatus, keyword);
   };
 
-
- 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 1 ? 0 : 1;
 
@@ -286,7 +282,12 @@ console.log(currentUserRole);
         const updatedUsers = users.map((profile) =>
           profile.id === id ? { ...profile, status: newStatus } : profile
         );
-        applyCombinedFilters(updatedUsers, selectedLocation, selectedStatus, searchTerm);
+        applyCombinedFilters(
+          updatedUsers,
+          selectedLocation,
+          selectedStatus,
+          searchTerm
+        );
       } else {
         console.error("Unexpected response:", response);
       }
@@ -307,6 +308,7 @@ console.log(currentUserRole);
       formData.append("firstName", selectedProfile.firstName);
       formData.append("lastName", selectedProfile.lastName);
       formData.append("email", selectedProfile.email);
+      formData.append("role_id", selectedProfile.role_id);
       formData.append(
         "dob",
         editDate?.toISOString().split("T")[0] || selectedProfile.dob
@@ -410,142 +412,141 @@ console.log(currentUserRole);
       setTimeout(() => setFeedbackModalOpen(false), 2000);
     }
   };
-  const handleLocationChange = async (locationId) => {
-    setSelectedLocation(locationId);
-    setLoading(true);
+  // const handleLocationChange = async (locationId) => {
+  //   setSelectedLocation(locationId);
+  //   setLoading(true);
 
-    try {
-      if (locationId === "all") {
-        // If "All Locations" is selected, show all users
-        setFilteredProfiles(users);
-      } else {
-        const response = await axios.get(`${baseURL}/locations/${locationId}/users`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+  //   try {
+  //     if (locationId === "all") {
+  //       // If "All Locations" is selected, show all users
+  //       setFilteredProfiles(users);
+  //     } else {
+  //       const response = await axios.get(`${baseURL}/locations/${locationId}/users`, {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       });
 
-        const locationUsers = response.data.data.map((item) => item.user); // Extract `user` from each record
-        setFilteredProfiles(locationUsers);
-      }
-    } catch (error) {
-      console.error("Error fetching users by location:", error);
-    } finally {
-      setLoading(false);
+  //       const locationUsers = response.data.data.map((item) => item.user); // Extract `user` from each record
+  //       setFilteredProfiles(locationUsers);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching users by location:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const applyCombinedFilters = (
+    allUsers,
+    locationId,
+    statusValue,
+    keyword = ""
+  ) => {
+    let filtered = allUsers;
+
+    // 🔹 Apply location filter
+    if (locationId !== "all") {
+      filtered = filtered.filter(
+        (user) => String(user.location_id) === String(locationId)
+      );
     }
+
+    // 🔹 Apply status filter
+    // if (statusValue !== "all") {
+    //   filtered = filtered.filter(
+    //     (user) => String(user.status) === String(statusValue)
+    //   );
+    // }
+    if (statusValue !== "all") {
+      filtered = filtered.filter((user) => {
+        if (statusValue === "2" || statusValue === "3") {
+          return user.role_id === Number(statusValue); // ✅ Corrected comparison
+        }
+        return String(user.status) === String(statusValue);
+      });
+    }
+
+    // 🔹 Apply search keyword
+    if (keyword.trim() !== "") {
+      const lowerKeyword = keyword.toLowerCase();
+      filtered = filtered.filter((profile) => {
+        const fullName =
+          `${profile.firstName} ${profile.lastName}`.toLowerCase();
+        const email = profile.email?.toLowerCase() || "";
+        const phone = profile.mobileNumber?.toString() || "";
+
+        return (
+          fullName.includes(lowerKeyword) ||
+          email.includes(lowerKeyword) ||
+          phone.includes(lowerKeyword)
+        );
+      });
+    }
+
+    setFilteredProfiles(filtered);
+    console.log("Applied filters:", {
+      locationId,
+      statusValue,
+      keyword,
+      allUsers,
+    });
+    console.log("Filtered profiles:", filtered);
   };
 
-
-const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") => {
-  let filtered = allUsers;
-
-  // 🔹 Apply location filter
-  if (locationId !== "all") {
-    filtered = filtered.filter(
-      (user) => String(user.location_id) === String(locationId)
-    );
-  }
-
-  // 🔹 Apply status filter
-  // if (statusValue !== "all") {
-  //   filtered = filtered.filter(
-  //     (user) => String(user.status) === String(statusValue)
-  //   );
-  // }
-   if (statusValue !== "all") {
-    filtered = filtered.filter((user) => {
-       if (statusValue === "2" || statusValue === "3") {
-        return user.role_id === Number(statusValue); // ✅ Corrected comparison
-      }
-      return String(user.status) === String(statusValue);
-    });
-  }
-
-  // 🔹 Apply search keyword
-  if (keyword.trim() !== "") {
-    const lowerKeyword = keyword.toLowerCase();
-    filtered = filtered.filter((profile) => {
-      const fullName = `${profile.firstName} ${profile.lastName}`.toLowerCase();
-      const email = profile.email?.toLowerCase() || "";
-      const phone = profile.mobileNumber?.toString() || "";
-
-      return (
-        fullName.includes(lowerKeyword) ||
-        email.includes(lowerKeyword) ||
-        phone.includes(lowerKeyword)
-      );
-    });
-  }
-
-  setFilteredProfiles(filtered);
-  console.log("Applied filters:" , { locationId, statusValue, keyword  , allUsers });
-  console.log("Filtered profiles:", filtered);
-};
-
-
-
-// useEffect(() => {
-//   applyCombinedFilters(filteredByStatus, selectedLocation, selectedStatus, searchTerm);
-// }, [searchTerm]);
-
-
-
+  // useEffect(() => {
+  //   applyCombinedFilters(filteredByStatus, selectedLocation, selectedStatus, searchTerm);
+  // }, [searchTerm]);
 
   return (
     <div className="flex flex-col gap-3 ">
       <div className="sticky top-0 bg-[#f1f1f1] py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         {/* Left side: Filters */}
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
-
-
           <select
-  name="selectedStatus"
-  className="input flex-1 min-w-[140px]"
-  value={selectedStatus}
-  onChange={(e) => {
-    const value = e.target.value;
-    setSelectedStatus(value);
+            name="selectedStatus"
+            className="input flex-1 min-w-[140px]"
+            value={selectedStatus}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSelectedStatus(value);
 
-    applyCombinedFilters(users, selectedLocation, value, searchTerm);
-    // setFilteredProfiles(filtered);
-    // setFilteredByStatus(filtered);
-    // applySearchFilter(searchTerm, filtered);
-  }}
->
-  <option value="all">All Status</option>
-  <option value="1">Active</option>
-  <option value="0">Inactive</option>
-  <option value="2">Manager</option>
-  <option value="3">Employee</option>
-
-</select>
+              applyCombinedFilters(users, selectedLocation, value, searchTerm);
+              // setFilteredProfiles(filtered);
+              // setFilteredByStatus(filtered);
+              // applySearchFilter(searchTerm, filtered);
+            }}
+          >
+            <option value="all">All</option>
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+            <option value="2">Manager</option>
+            <option value="3">Employee</option>
+          </select>
 
           {/* Location Filter */}
-        <select
-  name="selectedLocation"
-  className="input flex-1 min-w-[140px]"
-  value={selectedLocation}
-  onChange={(e) => {
-    const value = e.target.value;
-    setSelectedLocation(value);
+          <select
+            name="selectedLocation"
+            className="input flex-1 min-w-[140px]"
+            value={selectedLocation}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSelectedLocation(value);
 
-   applyCombinedFilters(users,  value, selectedStatus, searchTerm);
-    // setFilteredProfiles(filtered);
-    // setFilteredByStatus(filtered);
-    // applySearchFilter(searchTerm, filtered);
-  }}
->
-  <option value="all">All Locations</option>
-  {locations.map((loc) => (
-    <option key={loc.id} value={loc.id}>
-      {loc.location_name}
-    </option>
-  ))}
-</select>
-
-
+              applyCombinedFilters(users, value, selectedStatus, searchTerm);
+              // setFilteredProfiles(filtered);
+              // setFilteredByStatus(filtered);
+              // applySearchFilter(searchTerm, filtered);
+            }}
+          >
+            <option value="all">All Locations</option>
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.location_name}
+              </option>
+            ))}
+          </select>
         </div>
-
 
         {/* Right side: Search + Add */}
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
@@ -587,8 +588,9 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
             filteredProfiles.map((profile) => (
               <div key={profile.id} className="w-full">
                 <div
-                  className={`shadow-xl p-4 rounded-xl h-full flex flex-col justify-between ${profile.status === 1 ? "mSideBar" : "mSideBarInactive"
-                    }`}
+                  className={`shadow-xl p-4 rounded-xl h-full flex flex-col justify-between ${
+                    profile.status === 1 ? "mSideBar" : "mSideBarInactive"
+                  }`}
                 >
                   {/* Top Section: Image + Info */}
                   <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
@@ -608,7 +610,11 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
                       )}
                       <div className="text-left w-full min-w-0 overflow-hidden">
                         <h3 className="paragraphBold md:subheadingBold break-words">
-                          {profile.role_id === 2 ? `${profile.firstName} ${profile.lastName} (M)` : profile.role_id === 1 ? `${profile.firstName} ${profile.lastName} (A)` : `${profile.firstName} ${profile.lastName} (E)`}
+                          {profile.role_id === 2
+                            ? `${profile.firstName} ${profile.lastName} (M)`
+                            : profile.role_id === 1
+                            ? `${profile.firstName} ${profile.lastName} (A)`
+                            : `${profile.firstName} ${profile.lastName} (E)`}
                         </h3>
                         <p className="paragraphThin break-words">
                           {profile.email}
@@ -702,6 +708,7 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
               <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-sm sm:max-w-md w-full overflow-y-auto max-h-[90vh]">
                 <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
                   <Dialog.Title className="heading">Add Employee</Dialog.Title>
+
                   <button
                     className="text-white font-bold text-2xl"
                     onClick={() => setIsModalOpen(false)}
@@ -709,7 +716,19 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
                     ×
                   </button>
                 </div>
-                <form className="mt-4 p-6 space-y-3" onSubmit={handleSubmit}>
+                {currentUserRole == 2 && (
+                  <>
+                    <div className="space-y-3 p-3">
+                      <p className="text-gray-500 text-sm text-center">
+                        <span className="text-red-500 font-bold">*</span>
+                        To view newly added employees
+                        <br />
+                        please assign them to your location.
+                      </p>
+                    </div>
+                  </>
+                )}
+                <form className="p-6 space-y-3" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col">
                       <label className="paragraphBold">First Name</label>
@@ -767,40 +786,48 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
                       <label className="paragraphBold">Date of Birthss</label>
-                    <DatePicker
-                          className="input"
-                          selected={createDate}
-                          onChange={(date) => {
-                            if (!date) return;
+                      <DatePicker
+                        className="input"
+                        selected={createDate}
+                        onChange={(date) => {
+                          if (!date) return;
 
-                            const age = differenceInYears(new Date(), date);
-                            setCreateDate(date); // Always show selected date
+                          const age = differenceInYears(new Date(), date);
+                          setCreateDate(date); // Always show selected date
 
-                            if (age < 10) {
-                              // Set error, don't allow in form
-                              setErrors(prev => ({ ...prev, dob: "You are not eligible. Minimum age is 10 years." }));
-                              setFormData(prev => ({ ...prev, dob: "" }));
-                            } else {
-                              // Clear error and set value
-                              setErrors(prev => ({ ...prev, dob: "" }));
-                              setFormData(prev => ({ ...prev, dob: date.toISOString().split("T")[0] }));
-                            }
-                          }}
-                          showYearDropdown
-                          showMonthDropdown
-                          dateFormat="dd/MM/yyyy"
-                          scrollableYearDropdown
-                          yearDropdownItemNumber={100}
-                          placeholderText="Select date"
-                          maxDate={new Date()}
-                        />
-                        {errors.dob && (
-                          <p className="text-red-500 text-sm mt-1">{errors.dob}</p>
-                        )}
+                          if (age < 10) {
+                            // Set error, don't allow in form
+                            setErrors((prev) => ({
+                              ...prev,
+                              dob: "You are not eligible. Minimum age is 10 years.",
+                            }));
+                            setFormData((prev) => ({ ...prev, dob: "" }));
+                          } else {
+                            // Clear error and set value
+                            setErrors((prev) => ({ ...prev, dob: "" }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              dob: date.toISOString().split("T")[0],
+                            }));
+                          }
+                        }}
+                        showYearDropdown
+                        showMonthDropdown
+                        dateFormat="dd/MM/yyyy"
+                        scrollableYearDropdown
+                        yearDropdownItemNumber={100}
+                        placeholderText="Select date"
+                        maxDate={new Date()}
+                      />
+                      {errors.dob && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.dob}
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-col">
                       <label className="paragraphBold">Phone Number</label>
-                     <input
+                      <input
                         type="text"
                         className="input"
                         value={formData.mobileNumber}
@@ -818,9 +845,16 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
 
                           // Validation
                           if (value.length === 0) {
-                            setErrors({ ...errors, mobileNumber: "Phone number is required" });
+                            setErrors({
+                              ...errors,
+                              mobileNumber: "Phone number is required",
+                            });
                           } else if (value.length !== 10) {
-                            setErrors({ ...errors, mobileNumber: "Phone number must be exactly 10 digits" });
+                            setErrors({
+                              ...errors,
+                              mobileNumber:
+                                "Phone number must be exactly 10 digits",
+                            });
                           } else {
                             setErrors({ ...errors, mobileNumber: "" }); // Clear error if valid
                           }
@@ -947,183 +981,207 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
       <Transition show={viewButtonModel} as={React.Fragment}>
         <Dialog
           as="div"
-        onClose={() => setViewButtonModel(false)}
-        className="relative z-50 rounded-lg"
-      >
-         <Transition.Child
-                    as={React.Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-        <div className="fixed inset-0 bg-gray-700/70"></div>
-        </Transition.Child>
-        <div className="fixed inset-0 flex items-center justify-center">
+          onClose={() => setViewButtonModel(false)}
+          className="relative z-50 rounded-lg"
+        >
           <Transition.Child
-                       as={React.Fragment}
-                       enter="ease-out duration-300"
-                       enterFrom="opacity-0 scale-95 translate-y-4"
-                       enterTo="opacity-100 scale-100 translate-y-0"
-                       leave="ease-in duration-200"
-                       leaveFrom="opacity-100 scale-100 translate-y-0"
-                       leaveTo="opacity-0 scale-95 translate-y-4"
-                     >
-          <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-sm sm:max-w-md w-full">
-            <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
-              <Dialog.Title className="heading">
-                Employee Details ({selectedProfile?.firstName})
-              </Dialog.Title>
-              <button
-                className="text-white font-bold text-2xl"
-                onClick={() => setViewButtonModel(false)}
-              >
-                ×
-              </button>
-            </div>
-            <form className="mt-4 p-6 space-y-3" onSubmit={updateUser}>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col">
-                  <label className="paragraphBold">First Name</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.firstName || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        firstName: capitalLetter(e.target.value),
-                      }))
-                    }
-                  />
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-700/70"></div>
+          </Transition.Child>
+          <div className="fixed inset-0 flex items-center justify-center">
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95 translate-y-4"
+              enterTo="opacity-100 scale-100 translate-y-0"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100 translate-y-0"
+              leaveTo="opacity-0 scale-95 translate-y-4"
+            >
+              <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-sm sm:max-w-md w-full">
+                <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
+                  <Dialog.Title className="heading">
+                    Employee Details ({selectedProfile?.firstName})
+                  </Dialog.Title>
+                  <button
+                    className="text-white font-bold text-2xl"
+                    onClick={() => setViewButtonModel(false)}
+                  >
+                    ×
+                  </button>
                 </div>
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Last Name</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.lastName || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        lastName: capitalLetter(e.target.value),
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <label className="paragraphBold">Email</label>
-                <input
-                  type="email"
-                  className="input"
-                  value={selectedProfile?.email || ""}
-                  onChange={(e) =>
-                    setSelectedProfile((prev) => ({
-                      ...prev,
-                      email: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="paragraphBold">Date of Birth</label>
-                <DatePicker
-                  className="input w-100"
-                  selected={editDate} // <-- use the actual state
-                  onChange={(date) => {
-                    setEditDate(date);
-                    setSelectedProfile((prev) => ({
-                      ...prev,
-                      dob: date.toISOString().split("T")[0], // Optional: update dob in selectedProfile if needed
-                    }));
-                  }}
-                  showYearDropdown
-                  showMonthDropdown
-                  dateFormat="dd/MM/yyyy"
-                  scrollableYearDropdown
-                  yearDropdownItemNumber={100}
-                  placeholderText="Select date"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Payrate/Hour</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.payrate || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        payrate: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Payrate %</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.payratePercent || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        payratePercent: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Phone Number</label>
-                  <input
-                    type="text"
-                    className="input"
-                    value={selectedProfile?.mobileNumber || ""}
-                    onChange={(e) =>
-                      setSelectedProfile((prev) => ({
-                        ...prev,
-                        mobileNumber: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="paragraphBold">Profile Image</label>
-                  <input
-                    type="file"
-                    className="bg-white rounded p-2"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
+                <form className="mt-4 p-6 space-y-3" onSubmit={updateUser}>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">First Name</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.firstName || ""}
+                        onChange={(e) =>
                           setSelectedProfile((prev) => ({
                             ...prev,
-                            image: reader.result, // Base64 image data
-                          }));
-                        };
-                        reader.readAsDataURL(file);
+                            firstName: capitalLetter(e.target.value),
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Last Name</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.lastName || ""}
+                        onChange={(e) =>
+                          setSelectedProfile((prev) => ({
+                            ...prev,
+                            lastName: capitalLetter(e.target.value),
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="paragraphBold">Email</label>
+                    <input
+                      type="email"
+                      className="input"
+                      value={selectedProfile?.email || ""}
+                      onChange={(e) =>
+                        setSelectedProfile((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
                       }
-                    }}
-                  />
-                </div>
-              </div>
-              {selectedProfile?.profileImage && (
-                <img
-                  src={
-                    selectedProfile.profileImage.startsWith("http")
-                      ? selectedProfile.profileImage
-                      : `${profileBaseURL}/${selectedProfile.profileImage}`
-                  }
-                  alt="Preview"
-                  className="mt-2 w-32 h-32 object-cover rounded-md"
-                />
-              )}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="paragraphBold">Date of Birth</label>
+                    <DatePicker
+                      className="input w-100"
+                      selected={editDate} // <-- use the actual state
+                      onChange={(date) => {
+                        setEditDate(date);
+                        setSelectedProfile((prev) => ({
+                          ...prev,
+                          dob: date.toISOString().split("T")[0], // Optional: update dob in selectedProfile if needed
+                        }));
+                      }}
+                      showYearDropdown
+                      showMonthDropdown
+                      dateFormat="dd/MM/yyyy"
+                      scrollableYearDropdown
+                      yearDropdownItemNumber={100}
+                      placeholderText="Select date"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Payrate/Hour</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.payrate || ""}
+                        onChange={(e) =>
+                          setSelectedProfile((prev) => ({
+                            ...prev,
+                            payrate: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Payrate %</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.payratePercent || ""}
+                        onChange={(e) =>
+                          setSelectedProfile((prev) => ({
+                            ...prev,
+                            payratePercent: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    {currentUserRole === 1 && (
+                      <div className="flex flex-col">
+                        <label className="paragraphBold">Role</label>
+                        <select
+                          className="input"
+                          value={selectedProfile?.role_id || ""}
+                          onChange={(e) =>
+                            setSelectedProfile((prev) => ({
+                              ...prev,
+                              role_id: parseInt(e.target.value),
+                            }))
+                          }
+                        >
+                          <option value="">Select Role</option>
+                          <option value="2">Manager</option>
+                          <option value="3">Employee</option>
+                        </select>
+                        {errors.role_id && (
+                          <p className="text-red-500 text-sm">
+                            {errors.role_id}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Phone Number</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={selectedProfile?.mobileNumber || ""}
+                        onChange={(e) =>
+                          setSelectedProfile((prev) => ({
+                            ...prev,
+                            mobileNumber: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="paragraphBold">Profile Image</label>
+                      <input
+                        type="file"
+                        className="bg-white rounded p-2"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setSelectedProfile((prev) => ({
+                                ...prev,
+                                image: reader.result, // Base64 image data
+                              }));
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {selectedProfile?.profileImage && (
+                    <img
+                      src={
+                        selectedProfile.profileImage.startsWith("http")
+                          ? selectedProfile.profileImage
+                          : `${profileBaseURL}/${selectedProfile.profileImage}`
+                      }
+                      alt="Preview"
+                      className="mt-2 w-32 h-32 object-cover rounded-md"
+                    />
+                  )}
 
                   <div className="flex justify-end gap-2 mt-4">
                     <button
@@ -1144,8 +1202,6 @@ const applyCombinedFilters = (allUsers, locationId, statusValue, keyword = "") =
           </div>
         </Dialog>
       </Transition>
-
-
 
       {/* ✅ Reusable Modal */}
       <FeedbackModal

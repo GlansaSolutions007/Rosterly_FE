@@ -89,7 +89,7 @@ const Rosters = () => {
     const fetchEmployees = async (id) => {
       const token = localStorage.getItem("token");
       try {
-        const response = await axios.get(`${baseURL}/locations/${id}/users`, {
+        const response = await axios.get(`${baseURL}/locations/${id}/users?pageName=rosters`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

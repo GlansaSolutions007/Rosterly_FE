@@ -70,7 +70,7 @@ const Location = () => {
     try {
       const token = localStorage.getItem("token");
       const employeeList = await axios.get(
-        `${baseURL}/users/login/${id}/${locationId}`,
+        `${baseURL}/users/login/${locationId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
