@@ -84,23 +84,20 @@ const Location = () => {
     }
   };
 
+  const fetchLocations = async () => {
+    try {
+      const response = await axios.get(`${baseURL}/locations`, { headers });
+      console.log("Locations:", response.data);
+      console.log("Location", locationId);
+      setLocations(response.data.data || response.data);
+    } catch (error) {
+      console.error("Failed to fetch locations", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/locations`, { headers });
-        console.log("Locations:", response.data);
-        console.log("Location", locationId);
-        setLocations(response.data.data || response.data);
-      } catch (error) {
-        console.error("Failed to fetch locations", error);
-      }
-    };
-
-    // Employee List Start here
 
     fetchLocations();
-    // fetchSales();
     if (id && locationId) {
       fetchEmployees();
     }
@@ -178,7 +175,7 @@ const Location = () => {
         setFeedbackModalOpen(false);
         setLoading(false);
       }, 2000);
-      fetchEmployees(); 
+      fetchEmployees();
     } catch (error) {
       console.error("Error deleting user:", error);
       setFeedbackMessage("Failed to delete user.");
@@ -254,7 +251,7 @@ const Location = () => {
         setLocationName("");
         setIsEmployeeModalOpen(false);
         await getLocation(locationId)
-        fetchEmployees();      
+        fetchEmployees();
       } else {
         setFeedbackMessage(res.data.message || "Something went wrong.");
       }
@@ -449,7 +446,7 @@ const Location = () => {
           response.data?.message || "Location added successfully."
         );
         setFeedbackModalOpen(true);
-       
+        fetchLocations();
       } catch (error) {
         console.error("API Error:", error);
         if (error.response && error.response.data.errors) {
@@ -623,7 +620,7 @@ const Location = () => {
                   Get Data
                 </button> */}
               </div>
-              {(activeTab === "general" || activeTab === "Sales") && (
+              {(activeTab === "general" || activeTab === "Sales") && roleId === 1 && (
                 <button
                   className="buttonTheme w-full md:w-auto"
                   title="Add Location"
@@ -922,295 +919,295 @@ const Location = () => {
       </div>
 
       {/* Location Model starts */}
-    <Transition show={isModalOpen} as={React.Fragment}>
+      <Transition show={isModalOpen} as={React.Fragment}>
         <Dialog
           as="div"
-        onClose={() => setIsModalOpen(false)}
-        className="relative z-50 rounded-lg"
-      >
-           <Transition.Child
-                    as={React.Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-        <div className="fixed inset-0 bg-gray-700/70"></div>
-        </Transition.Child>
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-50">
-          {/* <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-4xl w-full mx-4"> */}
-         <Transition.Child
-                       as={React.Fragment}
-                       enter="ease-out duration-300"
-                       enterFrom="opacity-0 scale-95 translate-y-4"
-                       enterTo="opacity-100 scale-100 translate-y-0"
-                       leave="ease-in duration-200"
-                       leaveFrom="opacity-100 scale-100 translate-y-0"
-                       leaveTo="opacity-0 scale-95 translate-y-4"
-                     >
-          <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
-              <Dialog.Title className="heading">Add Location</Dialog.Title>
-              <button
-                className="text-white font-bold text-2xl"
-                onClick={handleCloseModal}
-              >
-                ×
-              </button>
-            </div>
-            <form className="p-6" onSubmit={handleSubmit}>
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-full md:w-1/2 flex flex-col">
-                  <label className="paragraphBold mb-2">
-                    Select Location on Map
-                  </label>
-                  {/* <div className="flex-1 h-74 border rounded-md overflow-hidden"> */}
-                  <div className="h-64 md:h-72 border rounded-md overflow-hidden">
-                    <GoogleMapSelector
-                      address={addaddress}
-                      onLocationSelect={({ lat, lng }) => {
-                        setAddlatitude(lat.toFixed(9));
-                        setAddlongitude(lng.toFixed(9));
-                      }}
-                    />
-                  </div>
-                </div>
-                {/* Left Column - Form */}
-                <div className="flex-1 space-y-4">
-                  <p className="paragraphThin text-gray-500">
-                    Type your address to locate it on the map.
-                  </p>
-                  <div>
-                    <label className="paragraphBold block mb-1">Address</label>
-                    <textarea
-                      className="input w-full"
-                      rows={7}
-                      value={addaddress}
-                      onChange={(e) => setAddaddress(e.target.value)}
-                    />
-                    {errors.addaddress && (
-                      <span className="text-sm text-red-600">
-                        {errors.addaddress}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="w-full">
-                      <label className="paragraphBold block mb-1">
-                        Latitude
-                      </label>
-                      <input
-                        type="text"
-                        className="input w-full"
-                        value={addlatitude}
-                        onChange={(e) => setAddlatitude(e.target.value)}
-                      />
-                      {errors.addlatitude && (
-                        <span className="text-sm text-red-600">
-                          {errors.addlatitude}
-                        </span>
-                      )}
-                    </div>
-                    <div className="w-full">
-                      <label className="paragraphBold block mb-1">
-                        Longitude
-                      </label>
-                      <input
-                        type="text"
-                        className="input w-full"
-                        value={addlongitude}
-                        onChange={(e) => setAddlongitude(e.target.value)}
-                      />
-                      {errors.addlongitude && (
-                        <span className="text-sm text-red-600">
-                          {errors.addlongitude}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="paragraphBold block mb-1">
-                      Location Name
-                    </label>
-                    <input
-                      type="text"
-                      className="input w-full"
-                      value={addlocationName}
-                      onChange={(e) => setAddlocationName(capitalLetter(e.target.value))}
-                    />
-                    {errors.addlocationName && (
-                      <span className="text-sm text-red-600">
-                        {errors.addlocationName}
-                      </span>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="paragraphBold block mb-1">
-                      Average Daily Sales ($)
-                    </label>
-                    <input
-                      type="text"
-                      className="input w-full"
-                      value={addsales}
-                      onChange={(e) => setAddsales(e.target.value)}
-                    />
-                    {errors.addsales && (
-                      <span className="text-sm text-red-600">
-                        {errors.addsales}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Column - Map */}
-
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  type="button"
-                  // className="buttonGrey"
-                  className="buttonGrey w-full sm:w-auto"
-                  onClick={handleCloseModal}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  // className="buttonTheme"
-                  className="buttonTheme w-full sm:w-auto"
-                >
-                  Add Location
-                </button>
-              </div>
-            </form>
-          </Dialog.Panel>
+          onClose={() => setIsModalOpen(false)}
+          className="relative z-50 rounded-lg"
+        >
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-700/70"></div>
           </Transition.Child>
-        </div>
-      </Dialog>
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-50">
+            {/* <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-4xl w-full mx-4"> */}
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95 translate-y-4"
+              enterTo="opacity-100 scale-100 translate-y-0"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100 translate-y-0"
+              leaveTo="opacity-0 scale-95 translate-y-4"
+            >
+              <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
+                  <Dialog.Title className="heading">Add Location</Dialog.Title>
+                  <button
+                    className="text-white font-bold text-2xl"
+                    onClick={handleCloseModal}
+                  >
+                    ×
+                  </button>
+                </div>
+                <form className="p-6" onSubmit={handleSubmit}>
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="w-full md:w-1/2 flex flex-col">
+                      <label className="paragraphBold mb-2">
+                        Select Location on Map
+                      </label>
+                      {/* <div className="flex-1 h-74 border rounded-md overflow-hidden"> */}
+                      <div className="h-64 md:h-72 border rounded-md overflow-hidden">
+                        <GoogleMapSelector
+                          address={addaddress}
+                          onLocationSelect={({ lat, lng }) => {
+                            setAddlatitude(lat.toFixed(9));
+                            setAddlongitude(lng.toFixed(9));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    {/* Left Column - Form */}
+                    <div className="flex-1 space-y-4">
+                      <p className="paragraphThin text-gray-500">
+                        Type your address to locate it on the map.
+                      </p>
+                      <div>
+                        <label className="paragraphBold block mb-1">Address</label>
+                        <textarea
+                          className="input w-full"
+                          rows={7}
+                          value={addaddress}
+                          onChange={(e) => setAddaddress(e.target.value)}
+                        />
+                        {errors.addaddress && (
+                          <span className="text-sm text-red-600">
+                            {errors.addaddress}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="w-full">
+                          <label className="paragraphBold block mb-1">
+                            Latitude
+                          </label>
+                          <input
+                            type="text"
+                            className="input w-full"
+                            value={addlatitude}
+                            onChange={(e) => setAddlatitude(e.target.value)}
+                          />
+                          {errors.addlatitude && (
+                            <span className="text-sm text-red-600">
+                              {errors.addlatitude}
+                            </span>
+                          )}
+                        </div>
+                        <div className="w-full">
+                          <label className="paragraphBold block mb-1">
+                            Longitude
+                          </label>
+                          <input
+                            type="text"
+                            className="input w-full"
+                            value={addlongitude}
+                            onChange={(e) => setAddlongitude(e.target.value)}
+                          />
+                          {errors.addlongitude && (
+                            <span className="text-sm text-red-600">
+                              {errors.addlongitude}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="paragraphBold block mb-1">
+                          Location Name
+                        </label>
+                        <input
+                          type="text"
+                          className="input w-full"
+                          value={addlocationName}
+                          onChange={(e) => setAddlocationName(capitalLetter(e.target.value))}
+                        />
+                        {errors.addlocationName && (
+                          <span className="text-sm text-red-600">
+                            {errors.addlocationName}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="paragraphBold block mb-1">
+                          Average Daily Sales ($)
+                        </label>
+                        <input
+                          type="text"
+                          className="input w-full"
+                          value={addsales}
+                          onChange={(e) => setAddsales(e.target.value)}
+                        />
+                        {errors.addsales && (
+                          <span className="text-sm text-red-600">
+                            {errors.addsales}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Column - Map */}
+
+                  </div>
+
+                  <div className="flex justify-end gap-3 mt-6">
+                    <button
+                      type="button"
+                      // className="buttonGrey"
+                      className="buttonGrey w-full sm:w-auto"
+                      onClick={handleCloseModal}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      // className="buttonTheme"
+                      className="buttonTheme w-full sm:w-auto"
+                    >
+                      Add Location
+                    </button>
+                  </div>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
       </Transition>
       {/* Location Model Ends */}
       {/* Employee Model Starts*/}
 
-  <Transition show={isEmployeeModalOpen} as={React.Fragment}>
+      <Transition show={isEmployeeModalOpen} as={React.Fragment}>
         <Dialog
           as="div"
-        onClose={() => setIsEmployeeModalOpen(false)}
-        className="relative z-50 rounded-lg"
-      >
+          onClose={() => setIsEmployeeModalOpen(false)}
+          className="relative z-50 rounded-lg"
+        >
           <Transition.Child
-                    as={React.Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-        <div className="fixed inset-0 bg-gray-700/70"></div>
-        </Transition.Child>
-        <div className="fixed inset-0 flex items-center justify-center">
-           <Transition.Child
-                       as={React.Fragment}
-                       enter="ease-out duration-300"
-                       enterFrom="opacity-0 scale-95 translate-y-4"
-                       enterTo="opacity-100 scale-100 translate-y-0"
-                       leave="ease-in duration-200"
-                       leaveFrom="opacity-100 scale-100 translate-y-0"
-                       leaveTo="opacity-0 scale-95 translate-y-4"
-                     >
-          <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-md w-full">
-            <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
-              <Dialog.Title className="heading">{modalRoleFilter == 2 ? "Assign Manager" : "Assign Employee"}</Dialog.Title>
-              <button
-                className="text-white font-bold text-2xl"
-                onClick={() => setIsEmployeeModalOpen(false)}
-              >
-                ×
-              </button>
-            </div>
-
-            <form
-              className="mt-1 p-4 space-y-3"
-              onSubmit={handleEmployeeSubmit}
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-700/70"></div>
+          </Transition.Child>
+          <div className="fixed inset-0 flex items-center justify-center">
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95 translate-y-4"
+              enterTo="opacity-100 scale-100 translate-y-0"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100 translate-y-0"
+              leaveTo="opacity-0 scale-95 translate-y-4"
             >
-              {/* Location Name Field */}
-              <div className="flex flex-col">
-                <label className="paragraphBold">Location Name</label>
-                <input
-                  type="text"
-                  className="input"
-                  value={locationName}
-                  onChange={(e) => setLocationName(e.target.value)}
-                  required
-                />
-                {errors.locationName && (
-                  <span className="text-sm text-red-600">
-                    {errors.locationName}
-                  </span>
-                )}
-              </div>
+              <Dialog.Panel className="bg-gray-200 rounded-lg shadow-lg max-w-md w-full">
+                <div className="bg-gray-800 rounded-t-lg text-white px-4 py-3 flex justify-between items-center">
+                  <Dialog.Title className="heading">{modalRoleFilter == 2 ? "Assign Manager" : "Assign Employee"}</Dialog.Title>
+                  <button
+                    className="text-white font-bold text-2xl"
+                    onClick={() => setIsEmployeeModalOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
 
-              {/* Employee Selection */}
-              <div className="flex flex-col">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="paragraphBold">Employees List</label>
-                  <div className="paragraphBold flex items-center gap-2">
+                <form
+                  className="mt-1 p-4 space-y-3"
+                  onSubmit={handleEmployeeSubmit}
+                >
+                  {/* Location Name Field */}
+                  <div className="flex flex-col">
+                    <label className="paragraphBold">Location Name</label>
                     <input
-                      type="checkbox"
-                      onChange={handleAllchecked}
-                      checked={allSelected}
+                      type="text"
+                      className="input"
+                      value={locationName}
+                      onChange={(e) => setLocationName(e.target.value)}
+                      required
                     />
-                    Select All
+                    {errors.locationName && (
+                      <span className="text-sm text-red-600">
+                        {errors.locationName}
+                      </span>
+                    )}
                   </div>
-                </div>
 
-                <div className="employee-checkboxes border p-2 rounded max-h-80 overflow-auto">
-                  {filteredModalEmployees.length > 0 ? (
-                    filteredModalEmployees.map((emp) => {
-                        const isChecked = employees.includes(emp.id.toString());
+                  {/* Employee Selection */}
+                  <div className="flex flex-col">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="paragraphBold">Employees List</label>
+                      <div className="paragraphBold flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          onChange={handleAllchecked}
+                          checked={allSelected}
+                        />
+                        Select All
+                      </div>
+                    </div>
 
-                        const toggleCheckbox = () => {
-                          const fakeEvent = {
-                            target: {
-                              value: emp.id.toString(),
-                              checked: !isChecked,
-                            },
+                    <div className="employee-checkboxes border p-2 rounded max-h-80 overflow-auto">
+                      {filteredModalEmployees.length > 0 ? (
+                        filteredModalEmployees.map((emp) => {
+                          const isChecked = employees.includes(emp.id.toString());
+
+                          const toggleCheckbox = () => {
+                            const fakeEvent = {
+                              target: {
+                                value: emp.id.toString(),
+                                checked: !isChecked,
+                              },
+                            };
+                            handleChange(fakeEvent);
                           };
-                          handleChange(fakeEvent);
-                        };
 
-                        return (
-                          <div
-                            className="flex items-center bg-white rounded p-2 gap-3 mb-2 cursor-pointer"
-                            key={emp.id}
-                            onClick={toggleCheckbox}
-                          >
-                            <input
-                              type="checkbox"
-                              value={emp.id.toString()}
-                              onChange={handleChange}
-                              checked={isChecked}
-                              onClick={(e) => e.stopPropagation()} // prevent double trigger
-                            />
-                            <p className="paragraph">
-                              {emp.firstName} {emp.lastName}
-                            </p>
-                          </div>
-                        );
-                      })
-                  ) : (
-                    <p className="text-gray-500">No employees available</p>
-                  )}
-                </div>
+                          return (
+                            <div
+                              className="flex items-center bg-white rounded p-2 gap-3 mb-2 cursor-pointer"
+                              key={emp.id}
+                              onClick={toggleCheckbox}
+                            >
+                              <input
+                                type="checkbox"
+                                value={emp.id.toString()}
+                                onChange={handleChange}
+                                checked={isChecked}
+                                onClick={(e) => e.stopPropagation()} // prevent double trigger
+                              />
+                              <p className="paragraph">
+                                {emp.firstName} {emp.lastName}
+                              </p>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="text-gray-500">No employees available</p>
+                      )}
+                    </div>
 
 
-                {/* <div className="employee-checkboxes border p-2 rounded max-h-80 overflow-auto">
+                    {/* <div className="employee-checkboxes border p-2 rounded max-h-80 overflow-auto">
                   {employeeName.length > 0 ? (
                     employeeName.map((emp) => (
                       <div
@@ -1237,19 +1234,19 @@ const Location = () => {
                     <p className="text-gray-500">No employees available</p>
                   )}
                 </div> */}
-              </div>
+                  </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-end gap-2 mt-4">
-                <button type="submit" title="Add Employee" className="buttonTheme">
-                  Add
-                </button>
-              </div>
-            </form>
-          </Dialog.Panel>
-          </Transition.Child>
-        </div>
-      </Dialog>
+                  {/* Submit Button */}
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button type="submit" title="Add Employee" className="buttonTheme">
+                      Add
+                    </button>
+                  </div>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
       </Transition>
 
       {/* Employee Model Ends */}
