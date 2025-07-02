@@ -17,6 +17,7 @@ const Profile = () => {
   const profileURL = import.meta.env.VITE_PROFILE_BASE_URL;
   const token = localStorage.getItem("token");
   const id = localStorage.getItem("id");
+  const roleId = localStorage.getItem("role_id");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,6 +35,7 @@ const Profile = () => {
           email: userData.email,
           mobileNumber: userData.mobileNumber,
           profileImage: userData.profileImage,
+          userRole: userData.role_id,
         });
       } catch (error) {
         console.error("Error fetching profile", error);
@@ -129,7 +131,7 @@ const Profile = () => {
             </div>
           </div>
 
-          <h3 className="subHeading mt-2">{user.name}</h3>
+          <h3 className="subHeading mt-2">{user.name}{user.userRole === 1 ? " (Admin)" : user.userRole===2 ? " (Manager)" : "(Employee)"}</h3>
         </div>
 
         <div className="w-full">
@@ -138,7 +140,7 @@ const Profile = () => {
               <label className="paragraph">Username</label>
               <input
                 type="text"
-                value={user.name}
+                value={user.name} 
                 onChange={(e) => setUser({ ...user, name: e.target.value })}
                 className="input w-full border border-gray-500"
                 readOnly
