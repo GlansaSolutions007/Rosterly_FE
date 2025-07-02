@@ -46,6 +46,8 @@ const Rosters = () => {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [shiftConflict, setShiftConflict] = useState(null);
   const [employeeShiftsCache, setEmployeeShiftsCache] = useState({});
+  const [shiftError, setShiftError] = useState("");
+  const [breakError, setBreakError] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -371,9 +373,44 @@ const Rosters = () => {
     }
   };
 
+  const timeStringToMinutes = (timeStr) => {
+    if (timeStr === "-- --") return null;
+
+    const [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+  };
+
   // Handle saving the shift
   const handleShiftSave = (e) => {
     e.preventDefault();
+
+    const startMins = timeStringToMinutes(start);
+    const finishMins = timeStringToMinutes(finish);
+    const breakMins = parseInt(breakTime) || 0;
+
+    let hasError = false;
+    setShiftError("");
+    setBreakError("");
+
+    if (startMins == null || finishMins == null) {
+      setShiftError("Please select valid Start and Finish times.");
+      hasError = true;
+    } else if (finishMins - startMins < 60) {
+      setShiftError("Shift must be at least 1 hour long.");
+      hasError = true;
+    }
+
+    if ((finishMins - startMins === 60) && breakMins !== 0 && breakMins !== 15) {
+      setBreakError("For a 1-hour shift, break can only be 0 or 15 mins.");
+      hasError = true;
+    }
+
+    if (hasError) return;
 
     const isEditing = !!shiftToEdit;
 
@@ -415,6 +452,8 @@ const Rosters = () => {
     setBreakTime("");
     setDescription("");
     setShiftToEdit(null);
+    setShiftError("");
+    setBreakError("");
   };
 
   const calculateNumericTotalHours = (timeRange, breakTime) => {
@@ -449,104 +488,104 @@ const Rosters = () => {
   };
 
   //To publish the roster
- const handlePublish = async () => {
-  const token = localStorage.getItem("token");
+  const handlePublish = async () => {
+    const token = localStorage.getItem("token");
 
-  if (!selectedLocation) {
-    setFeedbackMessage("Please select a location before publishing the roster.");
-    setFeedbackModalOpen(true);
-    return false;
-  }
+    if (!selectedLocation) {
+      setFeedbackMessage("Please select a location before publishing the roster.");
+      setFeedbackModalOpen(true);
+      return false;
+    }
 
-  const startOfWeek = moment(currentWeek).day(3); // Wednesday as start
-  const weekKey = `${startOfWeek.format("YYYY-MM-DD")}_${selectedLocation}`;
-  const endOfWeek = startOfWeek.clone().add(6, "days");
+    const startOfWeek = moment(currentWeek).day(3); // Wednesday as start
+    const weekKey = `${startOfWeek.format("YYYY-MM-DD")}_${selectedLocation}`;
+    const endOfWeek = startOfWeek.clone().add(6, "days");
 
-  const formattedShifts = [];
+    const formattedShifts = [];
 
-  Object.entries(shiftsByEmployeeDay).forEach(([empId, daysObj]) => {
-    Object.entries(daysObj).forEach(([day, shifts]) => {
-      const dayDate = moment(day, "ddd, DD/MM");
-      if (!dayDate.isBetween(startOfWeek.clone().subtract(1, "day"), endOfWeek.clone().add(1, "day"))) {
-        return; // skip shifts outside the selected week
-      }
+    Object.entries(shiftsByEmployeeDay).forEach(([empId, daysObj]) => {
+      Object.entries(daysObj).forEach(([day, shifts]) => {
+        const dayDate = moment(day, "ddd, DD/MM");
+        if (!dayDate.isBetween(startOfWeek.clone().subtract(1, "day"), endOfWeek.clone().add(1, "day"))) {
+          return; // skip shifts outside the selected week
+        }
 
-      shifts.forEach((shift) => {
-        const [startTime, endTime] = shift.time.split(" - ");
+        shifts.forEach((shift) => {
+          const [startTime, endTime] = shift.time.split(" - ");
 
-        formattedShifts.push({
-          shiftId: shift.id,
-          user_id: parseInt(empId), // Ensure user_id is numeric
-          date: dayDate.format("YYYY-MM-DD"),
-          startTime: startTime,
-          endTime: endTime,
-          breakTime: parseFloat(shift.breakTime || 0),
-          description: shift.description || "",
-          hrsRate: shift.hrsRate || "0.00",
-          percentRate: shift.percentRate || "0.00",
-          totalPay: shift.totalPay || "0.00",
-          status: "active",
-          location_id: selectedLocation,
-          totalHrs: calculateNumericTotalHours(shift.time, shift.breakTime),
+          formattedShifts.push({
+            shiftId: shift.id,
+            user_id: parseInt(empId), // Ensure user_id is numeric
+            date: dayDate.format("YYYY-MM-DD"),
+            startTime: startTime,
+            endTime: endTime,
+            breakTime: parseFloat(shift.breakTime || 0),
+            description: shift.description || "",
+            hrsRate: shift.hrsRate || "0.00",
+            percentRate: shift.percentRate || "0.00",
+            totalPay: shift.totalPay || "0.00",
+            status: "active",
+            location_id: selectedLocation,
+            totalHrs: calculateNumericTotalHours(shift.time, shift.breakTime),
+          });
         });
       });
     });
-  });
 
-  if (formattedShifts.length === 0) {
-    setFeedbackMessage("No shifts to publish.");
-    setFeedbackModalOpen(true);
-    return false;
-  }
-
-  setIsPublishing(true);
-
-  try {
-    const response = await axios.post(
-      `${baseURL}/porstRoster`, // ✅ Fixed typo from `porstRoster`
-      {
-        rWeekStartDate: startOfWeek.format("YYYY-MM-DD"),
-        rWeekEndDate: endOfWeek.format("YYYY-MM-DD"),
-        locationId: selectedLocation,
-        rosters: formattedShifts,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    setFeedbackMessage("Roster published successfully!");
-    setFeedbackModalOpen(true);
-
-    const rosterWeekIdFromAPI = response?.data?.roster_week_id;
-    if (rosterWeekIdFromAPI) {
-      setRosterWeekId(rosterWeekIdFromAPI);
+    if (formattedShifts.length === 0) {
+      setFeedbackMessage("No shifts to publish.");
+      setFeedbackModalOpen(true);
+      return false;
     }
 
-    // Add to published list
-    setPublishedRosters((prev) => [
-      ...prev,
-      { location_id: selectedLocation, days },
-    ]);
+    setIsPublishing(true);
 
-    setWeekMetaByDate((prev) => ({
-      ...prev,
-      [weekKey]: { weekId: rosterWeekIdFromAPI || null, isPublished: 1 },
-    }));
+    try {
+      const response = await axios.post(
+        `${baseURL}/porstRoster`, // ✅ Fixed typo from `porstRoster`
+        {
+          rWeekStartDate: startOfWeek.format("YYYY-MM-DD"),
+          rWeekEndDate: endOfWeek.format("YYYY-MM-DD"),
+          locationId: selectedLocation,
+          rosters: formattedShifts,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    fetchRoster(); // refresh the view
-    return true;
-  } catch (error) {
-    console.error("Error publishing roster:", error);
-    setFeedbackMessage("Failed to publish roster. Please try again.");
-    setFeedbackModalOpen(true);
-    return false;
-  } finally {
-    setIsPublishing(false);
-  }
-};
+      setFeedbackMessage("Roster published successfully!");
+      setFeedbackModalOpen(true);
+
+      const rosterWeekIdFromAPI = response?.data?.roster_week_id;
+      if (rosterWeekIdFromAPI) {
+        setRosterWeekId(rosterWeekIdFromAPI);
+      }
+
+      // Add to published list
+      setPublishedRosters((prev) => [
+        ...prev,
+        { location_id: selectedLocation, days },
+      ]);
+
+      setWeekMetaByDate((prev) => ({
+        ...prev,
+        [weekKey]: { weekId: rosterWeekIdFromAPI || null, isPublished: 1 },
+      }));
+
+      fetchRoster(); // refresh the view
+      return true;
+    } catch (error) {
+      console.error("Error publishing roster:", error);
+      setFeedbackMessage("Failed to publish roster. Please try again.");
+      setFeedbackModalOpen(true);
+      return false;
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
 
   const fetchRoster = async () => {
@@ -1005,7 +1044,7 @@ const Rosters = () => {
           )}
         </div>
       </div>
-      {stats && (
+      {/* {stats && (
         <div className="w-full flex flex-col md:flex-row items-center justify-start gap-4 mt-6">
           <div className="card w-1/2">
             <h5 className="subHeading text-center">Mon, 7th Apr</h5>
@@ -1049,7 +1088,7 @@ const Rosters = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div>
@@ -1421,6 +1460,12 @@ const Rosters = () => {
                           ))}
                         </select>
                       </div>
+                      {shiftError && (
+                        <div className="text-red-600 text-xs col-span-3 -mt-2">{shiftError}</div>
+                      )}
+                      {breakError && (
+                        <div className="text-red-600 text-xs col-span-3 -mt-1">{breakError}</div>
+                      )}
                     </div>
                     {!calculateTotalHoursDisplay(start, finish, breakTime) ? (
                       <div className="text-red-600 text-xs mb-2 mt-1">
