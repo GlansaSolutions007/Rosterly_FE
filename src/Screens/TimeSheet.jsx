@@ -13,19 +13,29 @@ const TimeSheet = () => {
   const [locatedEmployees, setLocatedEmployees] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("default");
 
+
   const getWeekRange = (week) => {
-    const startOfWeek = moment(week).startOf("isoWeek").format("DD MMM");
-    const endOfWeek = moment(week).endOf("isoWeek").format("DD MMM");
-    return `${startOfWeek} - ${endOfWeek}`;
+    const startOfWeek = moment(week).day(3); // 3 = Wednesday
+    const endOfWeek = startOfWeek.clone().add(6, "days");
+    return `${startOfWeek.format("DD MMM")} - ${endOfWeek.format("DD MMM")}`;
   };
 
   const handlePrevWeek = () => {
-    setCurrentWeek((prev) => moment(prev).subtract(1, "week"));
+    setCurrentWeek((prev) => moment(prev).subtract(7, "days")); // subtract full week
   };
 
   const handleNextWeek = () => {
-    setCurrentWeek((prev) => moment(prev).add(1, "week"));
+    setCurrentWeek((prev) => moment(prev).add(7, "days")); // add full week
   };
+
+  const getDaysForWeek = (week) => {
+    const start = moment(week).day(3); // Start from Wednesday
+    return Array.from({ length: 7 }, (_, i) =>
+      start.clone().add(i, "days").format("ddd, DD/MM")
+    );
+  };
+
+  const days = getDaysForWeek(currentWeek);
 
   const handleLocation = (e) => {
     const newLocationId = e.target.value;
@@ -161,61 +171,19 @@ const TimeSheet = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {(selectedEmployeeId !== "default"
-                ? weekData
-                : Array(5).fill(null)
-              ).map((item, index) => {
-                // Calculate the day name for empty rows
-                let dayLabel = item?.day;
-                if (!item) {
-                  // Get the correct day name based on index (Monday=0)
-                  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-                  dayLabel = daysOfWeek[index] || "";
-                }
-                return (
-                  <tr key={index}>
-                    <td className="px-6 py-3 font-medium">
-                      {dayLabel}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item ? "8 hrs" : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item ? "30 mins" : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item
-                        ? item.day === "Wednesday"
-                          ? "9 hrs"
-                          : item.day === "Tuesday"
-                          ? "7 hrs"
-                          : "8 hrs"
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item
-                        ? item.day === "Wednesday"
-                          ? "1 hr"
-                          : item.day === "Monday"
-                          ? "0.5 hrs"
-                          : "—"
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item
-                        ? item.day === "Tuesday"
-                          ? "1 hr"
-                          : item.day === "Friday"
-                          ? "1.5 hrs"
-                          : "—"
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-right font-semibold">
-                      {item ? `$${item.pay}` : "$0"}
-                    </td>
-                  </tr>
-                );
-              })}
+              {days.map((dayLabel, index) => (
+                <tr key={index}>
+                  <td className="px-6 py-3 paragraphBold">
+                    {dayLabel}
+                  </td>
+                  <td className="px-6 py-3 text-center">—</td>
+                  <td className="px-6 py-3 text-center">—</td>
+                  <td className="px-6 py-3 text-center">—</td>
+                  <td className="px-6 py-3 text-center">—</td>
+                  <td className="px-6 py-3 text-center">—</td>
+                  <td className="px-6 py-3 text-right font-semibold">$0</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -225,18 +193,18 @@ const TimeSheet = () => {
             Weekly Summary (For Manager’s Log)
           </h3>
           <div className="space-y-2 text-sm text-gray-700">
-            <div className="flex justify-between">
+            <div className="flex justify-between">  
               <span>Total Overtime Hours</span>
-              <span>{selectedEmployeeId !== "default" ? "1.5 hrs" : "0 hrs"}</span>
+              <span>--</span>
             </div>
             <div className="flex justify-between">
               <span>Total Less Time Hours</span>
-              <span>{selectedEmployeeId !== "default" ? "2.5 hrs" : "0 hrs"}</span>
+              <span>--</span>
             </div>
             <div className="flex justify-between font-semibold ">
               <span>Total Pay</span>
               <span style={{ color: "green", fontWeight: "bold" }}>
-                {selectedEmployeeId !== "default" ? `$${totalPay}` : "$0"}
+                $0
               </span>
             </div>
           </div>
@@ -244,7 +212,7 @@ const TimeSheet = () => {
 
         <div className="px-4 sm:px-6 py-4 border-t text-right">
           {selectedEmployeeId !== "default" ? (
-            <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <button className="buttonTheme ">
               Approve
             </button>
           ) : (
