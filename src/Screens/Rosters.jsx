@@ -164,7 +164,7 @@ const Rosters = () => {
     );
 
     if (conflictingShift) {
-      return `Already shift exists from ${conflictingShift.startTime} to ${conflictingShift.endTime} on another location`;
+      return `Already shift exists from ${conflictingShift.startTime} to ${conflictingShift.endTime}.`;
     }
     return null;
   };
