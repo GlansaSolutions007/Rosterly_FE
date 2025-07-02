@@ -78,12 +78,12 @@ export default function Dashboard() {
       icon: <FiUsers className="text-3xl text-black-100" />,
       link: "/employee",
     },
-    {
-      title: "Active Rosters",
-      value: 34,
-      bg: "bg-rosterGreen",
-      icon: <MdAssignment className="text-3xl text-black-100" />,
-    },
+    // {
+    //   title: "Active Rosters",
+    //   value: 34,
+    //   bg: "bg-rosterGreen",
+    //   icon: <MdAssignment className="text-3xl text-black-100" />,
+    // },
     {
       title: "Pending Approvals",
       value: notifications,

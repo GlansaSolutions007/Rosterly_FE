@@ -59,13 +59,13 @@ export const navItems = [
         icon: <PiArticleNyTimesFill className="text-2xl text-black" />,
         roles:[1,2]
     },
-    {
-        id: 7,
-        title: 'Settings',
-        icon:  <IoSettings className="text-2xl text-black" />,
-        path: '/systemsettings',
-        roles:[1]
-    },
+    // {
+    //     id: 7,
+    //     title: 'Settings',
+    //     icon:  <IoSettings className="text-2xl text-black" />,
+    //     path: '/systemsettings',
+    //     roles:[1]
+    // },
     {
         id: 8,
         title: 'Notifications',
