@@ -562,7 +562,7 @@ const Rosterly = () => {
   return (
     <>
       <div className="text-indigo-950">
-        <p className="text-sm sm:text-base font-bold">Welcome, </p>
+        <p className="text-sm sm:text-base font-bold">Hello, </p>
         <p className="text-lg sm:text-xl font-bold">
           {getRoleId() === 1 ? `${userName} (Admin)` : userName}
         </p>

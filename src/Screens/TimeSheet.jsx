@@ -15,6 +15,7 @@ const TimeSheet = () => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("default");
   const [timesheetData, setTimesheetData] = useState([]);
   const [weekId, setWeekId] = useState(null);
+  const [payrate, setPayrate] = useState(0);
 
   const getWeekRange = (week) => {
     const startOfWeek = moment(week).day(3); // 3 = Wednesday
@@ -63,6 +64,7 @@ const TimeSheet = () => {
     fetchEmployees(newLocationId);
   };
 
+
   useEffect(() => {
     const fetchLocations = async () => {
       const token = localStorage.getItem("token");
@@ -98,7 +100,7 @@ const TimeSheet = () => {
           );
           setTimesheetData(res.data.data);
           console.log("Timesheet Data:", res.data.data);
-          console.log("Selected Employee ID:", selectedEmployeeId, "Location ID:", selectedLocation);
+          console.log("Selected Employee ID:", selectedEmployeeId, "Location ID:", selectedLocation, "Week ID:", weekId);
 
 
         } catch (error) {
@@ -161,6 +163,110 @@ const TimeSheet = () => {
     });
   };
 
+  const timeToMinutes = (timeStr) => {
+    if (!timeStr || timeStr === "—") return null;
+    const [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+  };
+
+  const breakToMinutes = (breakStr) => {
+    if (!breakStr || breakStr === "—") return 0;
+    const match = breakStr.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
+  const formatMinutesToReadable = (mins) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (h > 0 && m > 0) return `${h} hr ${m} mins`;
+    if (h > 0) return `${h} hr`;
+    return `${m} mins`;
+  };
+
+  const parseActualWorkMinutes = (timeStr) => {
+    if (!timeStr || timeStr === "—") return 0;
+    const match = timeStr.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
+  const calculateTimeDiff = (entry) => {
+    if (
+      !entry ||
+      entry.scheduled_shift === "—" ||
+      entry.actual_start === "—" ||
+      entry.actual_end === "—"
+    ) {
+      return { type: "none", value: "—" };
+    }
+
+    const [start, end] = entry.scheduled_shift.split(" - ");
+    const scheduledStart = timeToMinutes(start);
+    const scheduledEnd = timeToMinutes(end);
+    const scheduledBreak = breakToMinutes(entry.scheduled_break);
+    const scheduledDuration = scheduledEnd - scheduledStart - scheduledBreak;
+
+    const actualWork = parseActualWorkMinutes(entry.actual_work_time);
+
+    if (actualWork > scheduledDuration) {
+      return {
+        type: "overtime",
+        value: formatMinutesToReadable(actualWork - scheduledDuration),
+      };
+    }
+
+    if (actualWork < scheduledDuration) {
+      return {
+        type: "lesstime",
+        value: formatMinutesToReadable(scheduledDuration - actualWork),
+      };
+    }
+
+    return { type: "none", value: "—" };
+  };
+
+  const timeStrToHours = (str) => {
+    if (!str || str === "—") return 0;
+
+    const hrMatch = str.match(/(\d+)\s*hr/);
+    const minMatch = str.match(/(\d+)\s*mins?/);
+
+    const hours = hrMatch ? parseInt(hrMatch[1]) : 0;
+    const minutes = minMatch ? parseInt(minMatch[1]) : 0;
+
+    return hours + minutes / 60;
+  };
+
+  const weeklySummary = timesheetData.reduce(
+    (acc, entry) => {
+      const timeDiff = calculateTimeDiff(entry);
+
+      if (timeDiff.type === "overtime") {
+        acc.totalOvertime += timeStrToHours(timeDiff.value);
+      }
+
+      if (timeDiff.type === "lesstime") {
+        acc.totalLessTime += timeStrToHours(timeDiff.value);
+      }
+
+      const actualHours = timeStrToHours(entry.actual_work_time);
+      const overtimeHours = timeDiff.type === "overtime" ? timeStrToHours(timeDiff.value) : 0;
+
+      acc.totalPay += (actualHours + overtimeHours) * payrate;
+
+      return acc;
+    },
+    {
+      totalOvertime: 0,
+      totalLessTime: 0,
+      totalPay: 0,
+    }
+  );
+
   return (
     <div className="max-w-screen-xl mx-auto ">
       <div className="flex flex-col lg:flex-row flex-wrap justify-between items-start gap-4 py-2">
@@ -180,7 +286,19 @@ const TimeSheet = () => {
           <select
             className="input w-full sm:w-60"
             value={selectedEmployeeId}
-            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+            onChange={(e) => {
+              const id = e.target.value;
+              setSelectedEmployeeId(id);
+              const selectedEmp = locatedEmployees.find(
+                (emp) => emp.user.id.toString() === id
+              );
+
+              if (selectedEmp) {
+                setPayrate(parseFloat(selectedEmp.user.payrate));
+              } else {
+                setPayrate(0);
+              }
+            }}
             disabled={!locatedEmployees.length}
           >
             {locatedEmployees.length > 0 ? (
@@ -254,9 +372,22 @@ const TimeSheet = () => {
                 </tr>
               ) : timesheetData.length > 0 ? (
                 timesheetData.map((entry, index) => (
-                  <tr key={index}>
+                  <tr key={index} className="paragraphThin">
                     <td className="px-6 py-3 paragraphBold">{entry.date}</td>
-                    <td className="px-6 py-3 text-center">{entry.scheduled_shift}</td>
+                    <td className="px-6 py-3 text-center">
+                      {entry.scheduled_shift !== "—"
+                        ? (() => {
+                          const [start, end] = entry.scheduled_shift.split(" - ");
+                          const startMin = timeToMinutes(start);
+                          const endMin = timeToMinutes(end);
+                          const duration = endMin - startMin;
+                          const breakMin = breakToMinutes(entry.scheduled_break);
+                          const effectiveMin = duration - breakMin;
+
+                          return `${entry.scheduled_shift} (${formatMinutesToReadable(effectiveMin)})`;
+                        })()
+                        : "—"}
+                    </td>
                     <td className="px-6 py-3 text-center">{entry.scheduled_break}</td>
                     <td className="px-6 py-3 text-center">
                       {entry.actual_start !== "—" && entry.actual_end !== "—"
@@ -264,9 +395,31 @@ const TimeSheet = () => {
                         : "—"}
                     </td>
                     <td className="px-6 py-3 text-center">{entry.actual_break}</td>
-                    <td className="px-6 py-3 text-center">—</td>
-                    <td className="px-6 py-3 text-center">—</td>
-                    <td className="px-6 py-3 text-right font-semibold">$0</td>
+                    <td className="px-6 py-3 text-center">
+                      {calculateTimeDiff(entry).type === "overtime"
+                        ? calculateTimeDiff(entry).value
+                        : "—"}
+                    </td>
+
+                    <td className="px-6 py-3 text-center">
+                      {calculateTimeDiff(entry).type === "lesstime"
+                        ? calculateTimeDiff(entry).value
+                        : "—"}
+                    </td>
+                    <td className="px-6 py-3 text-right font-semibold">
+                      {(() => {
+                        const actualHours = timeStrToHours(entry.actual_work_time);
+                        const overtimeHours =
+                          calculateTimeDiff(entry).type === "overtime"
+                            ? timeStrToHours(calculateTimeDiff(entry).value)
+                            : 0;
+                        if (!payrate || isNaN(payrate)) return "$0.00";
+
+                        const dailyPay = ((actualHours + overtimeHours) * payrate).toFixed(2);
+
+                        return `$${dailyPay}`;
+                      })()}
+                    </td>
                   </tr>
                 ))
               ) : (
@@ -297,19 +450,20 @@ const TimeSheet = () => {
               <div className="space-y-2 text-sm text-gray-700">
                 <div className="flex justify-between">
                   <span>Total Overtime Hours</span>
-                  <span>--</span>
+                  <span>{weeklySummary.totalOvertime.toFixed(2)} hrs</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total Less Time Hours</span>
-                  <span>--</span>
+                  <span>{weeklySummary.totalLessTime.toFixed(2)} hrs</span>
                 </div>
-                <div className="flex justify-between font-semibold ">
+                <div className="flex justify-between font-semibold">
                   <span>Total Pay</span>
                   <span style={{ color: "green", fontWeight: "bold" }}>
-                    $0
+                    ${weeklySummary.totalPay.toFixed(2)}
                   </span>
                 </div>
               </div>
+
             </div>
 
             <div className="px-4 sm:px-6 py-4 border-t text-right">
