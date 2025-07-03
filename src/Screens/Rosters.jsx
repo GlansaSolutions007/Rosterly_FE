@@ -1047,7 +1047,7 @@ const Rosters = () => {
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
           <select
             name="selectedLocation"
-            className="input w-50 "
+            className="input w-50 cursor-pointer"
             value={selectedLocation}
             onChange={handleLocation}
           >
@@ -1059,15 +1059,15 @@ const Rosters = () => {
             ))}
           </select>
 
-          <div className="flex items-center justify-center bg-white rounded-lg text-sm font-semibold text-gray-900 w-full md:w-75 px-2">
+          <div className="flex items-center justify-center bg-white rounded-lg paragraphBold text-gray-900 w-full md:w-75 px-2">
             <FaAngleLeft
-              className="text-violet-800 hover:text-violet-950"
+              className="text-gray-800 hover:text-violet-950 cursor-pointer"
               size={16}
               onClick={handlePrevWeek}
             />
-            <p className="paragraphBold">{getWeekRange(currentWeek)}</p>
+            <p className="mx-2">{getWeekRange(currentWeek)}</p>
             <FaAngleRight
-              className="text-violet-800 hover:text-violet-950"
+              className="text-gray-800 hover:text-violet-950 cursor-pointer"
               size={16}
               onClick={handleNextWeek}
             />

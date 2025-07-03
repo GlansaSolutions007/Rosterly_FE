@@ -505,7 +505,7 @@ const People = () => {
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
           <select
             name="selectedStatus"
-            className="input flex-1 min-w-[140px]"
+            className="input flex-1 min-w-[140px] cursor-pointer"
             value={selectedStatus}
             onChange={(e) => {
               const value = e.target.value;
@@ -527,7 +527,7 @@ const People = () => {
           {/* Location Filter */}
           <select
             name="selectedLocation"
-            className="input flex-1 min-w-[140px]"
+            className="input flex-1 min-w-[140px] cursor-pointer"
             value={selectedLocation}
             onChange={(e) => {
               const value = e.target.value;
