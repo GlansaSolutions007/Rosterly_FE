@@ -21,6 +21,7 @@
     "axios": "^1.8.4",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "file-saver": "^2.0.5",
     "framer-motion": "^12.9.2",
     "geolib": "^3.3.4",
     "luxon": "^3.6.1",
