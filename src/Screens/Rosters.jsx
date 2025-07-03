@@ -54,26 +54,92 @@ const Rosters = () => {
   const loginId = localStorage.getItem("id");
 
   const getWeekRange = (week) => {
-    const startOfWeek = moment(week).day(3); // 3 = Wednesday
+    const startOfWeek = moment(week).day(3); 
     const endOfWeek = startOfWeek.clone().add(6, "days");
     return `${startOfWeek.format("DD MMM")} - ${endOfWeek.format("DD MMM")}`;
   };
 
   const handlePrevWeek = () => {
-    setCurrentWeek((prev) => moment(prev).subtract(7, "days")); // subtract full week
+    setCurrentWeek((prev) => moment(prev).subtract(7, "days"));
   };
 
   const handleNextWeek = () => {
-    setCurrentWeek((prev) => moment(prev).add(7, "days")); // add full week
+    setCurrentWeek((prev) => moment(prev).add(7, "days")); 
   };
 
   const getDaysForWeek = (week) => {
-    const start = moment(week).day(3); // Start from Wednesday
+    const start = moment(week).day(3); 
     return Array.from({ length: 7 }, (_, i) =>
       start.clone().add(i, "days").format("ddd, DD/MM")
     );
   };
-
+  const handleDownloadPDF = async () => {
+    if (!selectedLocation || !currentWeek) {
+      setFeedbackMessage("Please select a location and week before downloading PDF.");
+      setFeedbackModalOpen(true);
+      return;
+    }
+    if (!locatedEmployees || locatedEmployees.length === 0) {
+      setFeedbackMessage("There is no data to download.");
+      setFeedbackModalOpen(true);
+      return;
+    }
+    const everyEmployeeHasShift = locatedEmployees
+      .filter(emp => emp.user.status !== 0)
+      .every(emp => {
+        const empShifts = shiftsByEmployeeDay[emp.user.id] || {};
+        return Object.values(empShifts).some(dayShifts => dayShifts && dayShifts.length > 0);
+      });
+    if (!everyEmployeeHasShift) {
+      setFeedbackMessage("No shift to download.");
+      setFeedbackModalOpen(true);
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const startOfWeek = moment(currentWeek).day(3).format("YYYY-MM-DD");
+      let rosterWeekId = weekId;
+      const metaKey = `${startOfWeek}_${selectedLocation}`;
+      if (weekMetaByDate[metaKey]?.weekId) {
+        rosterWeekId = weekMetaByDate[metaKey].weekId;
+      }
+      if (!rosterWeekId) {
+        setFeedbackMessage("No roster found for the selected week and location.");
+        setFeedbackModalOpen(true);
+        return;
+      }
+      const response = await axios.get(
+        `${baseURL}/generatepdf`,
+        {
+          params: {
+            location_id: selectedLocation,
+            roster_week_id: rosterWeekId,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
+        }
+      );
+      if (response.data.size === 0) {
+        setFeedbackMessage("There is no data to download.");
+        setFeedbackModalOpen(true);
+        return;
+      }
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `roster_${selectedLocation}_${startOfWeek}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      setFeedbackMessage("Failed to download PDF. Please try again.");
+      setFeedbackModalOpen(true);
+      console.error("PDF download error:", error);
+    }
+  };
   const days = getDaysForWeek(currentWeek);
 
   useEffect(() => {
@@ -96,7 +162,6 @@ const Rosters = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        // locatedEmployees = response.data;
         setLocatedEmployees(response.data.data);
         console.log("Employees fetched:", response.data.data);
       } catch (error) {
@@ -104,7 +169,6 @@ const Rosters = () => {
       }
     };
 
-    // Call with the new location id directly
     fetchEmployees(newLocationId);
 
     console.log("Selected Location:", newLocationId);
@@ -1021,7 +1085,7 @@ const Rosters = () => {
             </div>
 
             <div className="group relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2">
-              <FaFilePdf className="icon50" />
+              <FaFilePdf onClick={handleDownloadPDF} className="icon50" />
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
                 PDF
               </span>
