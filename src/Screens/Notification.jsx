@@ -37,9 +37,9 @@ const NotificationPage = () => {
         setNotifications(sortedNotifications);
         // here
 
-        const fetchId = fetchedNotification.map((notID) => notID.id);
-        setNotificationId(fetchId);
-        setNotifications(fetchedNotification);
+        // const fetchId = fetchedNotification.map((notID) => notID.id);
+        // setNotificationId(fetchId);
+        // setNotifications(fetchedNotification);
         console.log("Fetched notifications:", fetchedNotification);
       } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -101,29 +101,53 @@ const NotificationPage = () => {
     }
   };
 
-  function formatDateTime(dateStr, isTimeOnly = false) {
-    if (!dateStr) return "";
+  // function formatDateTime(dateStr, isTimeOnly = false) {
+  //   if (!dateStr) return "";
 
-    // Handle time-only (for recurring)
-    if (isTimeOnly) {
-      const date = new Date(`1970-01-01T${convertTo24Hour(dateStr)}`);
-      if (isNaN(date.getTime())) return "Invalid Time";
-      return date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-      });
-    }
+  //   // Handle time-only (for recurring)
+  //   if (isTimeOnly) {
+  //     const date = new Date(`1970-01-01T${convertTo24Hour(dateStr)}`);
+  //     if (isNaN(date.getTime())) return "Invalid Time";
+  //     return date.toLocaleTimeString("en-US", {
+  //       hour: "numeric",
+  //       minute: "2-digit",
+  //     });
+  //   }
 
-    // Handle full datetime (for one-time)
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return "Invalid Date";
-    const time = date.toLocaleTimeString("en-US", {
+  //   // Handle full datetime (for one-time)
+  //   const date = new Date(dateStr);
+  //   if (isNaN(date.getTime())) return "Invalid Date";
+  //   const time = date.toLocaleTimeString("en-US", {
+  //     hour: "numeric",
+  //     minute: "2-digit",
+  //   });
+  //   const day = date.toLocaleDateString("en-GB");
+  //   return `${day}, ${time}`;
+  // }
+  function formatDateTime(dateStr) {
+  if (!dateStr) return "";
+
+  const isTimeOnly = !isNaN(Date.parse(`1970-01-01T${convertTo24Hour(dateStr)}`)) && !Date.parse(dateStr);
+
+  if (isTimeOnly) {
+    const date = new Date(`1970-01-01T${convertTo24Hour(dateStr)}`);
+    if (isNaN(date.getTime())) return "Invalid Time";
+    return date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
     });
-    const day = date.toLocaleDateString("en-GB");
-    return `${day}, ${time}`;
   }
+
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "Invalid Date";
+  const time = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const day = date.toLocaleDateString("en-GB");
+  return `${day}, ${time}`;
+}
+
 
   function convertTo24Hour(timeStr) {
     const [time, modifier] = timeStr.split(" ");

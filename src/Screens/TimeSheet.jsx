@@ -3,6 +3,7 @@ import moment from "moment";
 import { FaFilePdf, FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { IoStatsChartSharp } from "react-icons/io5";
 import axios from "axios";
+import { set } from "date-fns";
 
 const TimeSheet = () => {
   const [currentWeek, setCurrentWeek] = useState(moment());
@@ -12,7 +13,8 @@ const TimeSheet = () => {
   const [selectedLocation, setSelectedLocation] = useState("default");
   const [locatedEmployees, setLocatedEmployees] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("default");
-
+  const [timesheetData, setTimesheetData] = useState([]);
+  const [weekId, setWeekId] = useState(null);
 
   const getWeekRange = (week) => {
     const startOfWeek = moment(week).day(3); // 3 = Wednesday
@@ -37,6 +39,7 @@ const TimeSheet = () => {
 
   const days = getDaysForWeek(currentWeek);
 
+
   const handleLocation = (e) => {
     const newLocationId = e.target.value;
     setSelectedLocation(newLocationId);
@@ -50,6 +53,8 @@ const TimeSheet = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLocatedEmployees(response.data.data);
+        console.log("Located Employees:", response.data.data);
+
       } catch (error) {
         console.error("Error fetching employees:", error);
       }
@@ -74,21 +79,78 @@ const TimeSheet = () => {
     fetchLocations();
   }, []);
 
-  const selectedEmployee = locatedEmployees.find(
-    (emp) => emp.id.toString() === selectedEmployeeId
-  );
-  const weekData = [
-    { day: "Monday", pay: 1500 },
-    { day: "Tuesday", pay: 1600 },
-    { day: "Wednesday", pay: 1700 },
-    { day: "Thursday", pay: 1800 },
-    { day: "Friday", pay: 1900 },
-  ];
+  useEffect(() => {
+    const fetchTimesheet = async () => {
+      const token = localStorage.getItem("token");
 
-  const totalPay = weekData.reduce((sum, item) => sum + item.pay, 0);
+      if (
+        selectedLocation !== "default" &&
+        selectedEmployeeId !== "default" &&
+        weekId !== null
+      ) {
+
+        try {
+          const res = await axios.get(
+            `${baseURL}/timesheet/weekly-summary?user_id=${selectedEmployeeId}&location_id=${selectedLocation}&roster_week_id=${weekId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          setTimesheetData(res.data.data);
+          console.log("Timesheet Data:", res.data.data);
+          console.log("Selected Employee ID:", selectedEmployeeId, "Location ID:", selectedLocation);
+
+
+        } catch (error) {
+          console.error("Failed to fetch timesheet:", error);
+        }
+      }
+      else {
+        setTimesheetData([]);
+      }
+    };
+
+    fetchTimesheet();
+  }, [selectedLocation, selectedEmployeeId, weekId]);
+
+  const postWeek = async () => {
+    const token = localStorage.getItem("token");
+    const startOfWeek = moment(currentWeek).day(3);
+    const endOfWeek = startOfWeek.clone().add(6, "days");
+    try {
+      const response = await axios.post(
+        `${baseURL}/rosterWeekftch`,
+        {
+          rWeekStartDate: startOfWeek.format("YYYY-MM-DD"),
+          rWeekEndDate: endOfWeek.format("YYYY-MM-DD"),
+          location_id: selectedLocation,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Post week response:", response.data);
+      setWeekId(response.data.weekId);
+    } catch (error) {
+      console.error("Error posting week:", error);
+
+      if (error.response?.status === 404) {
+        setTimesheetData([]);
+        setWeekId(null);  
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (selectedLocation !== "default") {
+      postWeek();
+    }
+  }, [selectedLocation, currentWeek]);
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-screen-xl mx-auto ">
       <div className="flex flex-col lg:flex-row flex-wrap justify-between items-start gap-4 py-2">
         <div className="flex flex-wrap gap-3 w-full lg:w-auto">
           <select
@@ -113,7 +175,7 @@ const TimeSheet = () => {
               <>
                 <option value="default">--Select Employee--</option>
                 {locatedEmployees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
+                  <option key={emp.id} value={emp.user.id}>
                     {emp.user.firstName} {emp.user.lastName}
                   </option>
                 ))}
@@ -163,103 +225,90 @@ const TimeSheet = () => {
               <tr>
                 <th className="px-6 py-3 text-left">Day</th>
                 <th className="px-6 py-3 text-center">Scheduled Shift</th>
-                <th className="px-6 py-3 text-center">Break Time</th>
+                <th className="px-6 py-3 text-center">Scheduled Break Time</th>
                 <th className="px-6 py-3 text-center">Actual Working Time</th>
+                <th className="px-6 py-3 text-center">Actual Break Time</th>
                 <th className="px-6 py-3 text-center">Overtime</th>
                 <th className="px-6 py-3 text-center">Less Time</th>
                 <th className="px-6 py-3 text-right">Pay</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {(selectedEmployeeId !== "default"
-                ? weekData
-                : Array(7).fill(null)
-              ).map((item, index) => {
-                let dayLabel = item?.day;
-                if (!item) {
-                  dayLabel = days[index] || "";
-                }
-                return (
+              {weekId === null ? (
+                <tr>
+                  <td colSpan="8" className="text-center py-4 text-red-500 italic">
+                    No data available for this week.
+                  </td>
+                </tr>
+              ) : timesheetData.length > 0 ? (
+                timesheetData.map((entry, index) => (
                   <tr key={index}>
-                    <td className="px-6 py-3 paragraphBold">
-                      {dayLabel}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item ? "8 hrs" : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item ? "30 mins" : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item
-                        ? item.day === "Wednesday"
-                          ? "9 hrs"
-                          : item.day === "Tuesday"
-                            ? "7 hrs"
-                            : "8 hrs"
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item
-                        ? item.day === "Wednesday"
-                          ? "1 hr"
-                          : item.day === "Monday"
-                            ? "0.5 hrs"
-                            : "—"
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-center">
-                      {item
-                        ? item.day === "Tuesday"
-                          ? "1 hr"
-                          : item.day === "Friday"
-                            ? "1.5 hrs"
-                            : "—"
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-right font-semibold">
-                      {item ? `$${item.pay}` : "$0"}
-                    </td>
+                    <td className="px-6 py-3 paragraphBold">{entry.date}</td>
+                    <td className="px-6 py-3 text-center">{entry.scheduled_shift}</td>
+                    <td className="px-6 py-3 text-center">-</td>
+                    <td className="px-6 py-3 text-center">{entry.actual_work_time}</td>
+                    <td className="px-6 py-3 text-center">{entry.break_time}</td>
+                    <td className="px-6 py-3 text-center">—</td>
+                    <td className="px-6 py-3 text-center">—</td>
+                    <td className="px-6 py-3 text-right font-semibold">$0</td>
                   </tr>
-                );
-              })}
+                ))
+              ) : (
+                days.map((dayLabel, index) => (
+                  <tr key={index}>
+                    <td className="px-6 py-3 paragraphBold">{dayLabel}</td>
+                    <td className="px-6 py-3 text-center">—</td>
+                    <td className="px-6 py-3 text-center">—</td>
+                    <td className="px-6 py-3 text-center">—</td>
+                    <td className="px-6 py-3 text-center">—</td>
+                    <td className="px-6 py-3 text-center">—</td>
+                    <td className="px-6 py-3 text-center">—</td>
+                    <td className="px-6 py-3 text-right font-semibold">$0</td>
+                  </tr>
+                ))
+              )}
             </tbody>
+
           </table>
         </div>
 
-        <div className="bg-white px-4 sm:px-6 py-4 border-t border-gray-200">
-          <h3 className="text-base font-semibold text-gray-800 mb-3">
-            Weekly Summary (For Manager’s Log)
-          </h3>
-          <div className="space-y-2 text-sm text-gray-700">
-            <div className="flex justify-between">
-              <span>Total Overtime Hours</span>
-              <span>{selectedEmployeeId !== "default" ? "1.5 hrs" : "0 hrs"}</span>
+        {weekId !== null && (
+          <>
+            <div className="bg-white px-4 sm:px-6 py-4 border-t border-gray-200">
+              <h3 className="text-base font-semibold text-gray-800 mb-3">
+                Weekly Summary (For Manager’s Log)
+              </h3>
+              <div className="space-y-2 text-sm text-gray-700">
+                <div className="flex justify-between">
+                  <span>Total Overtime Hours</span>
+                  <span>--</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total Less Time Hours</span>
+                  <span>--</span>
+                </div>
+                <div className="flex justify-between font-semibold ">
+                  <span>Total Pay</span>
+                  <span style={{ color: "green", fontWeight: "bold" }}>
+                    $0
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>Total Less Time Hours</span>
-              <span>{selectedEmployeeId !== "default" ? "2.5 hrs" : "0 hrs"}</span>
-            </div>
-            <div className="flex justify-between font-semibold ">
-              <span>Total Pay</span>
-              <span style={{ color: "green", fontWeight: "bold" }}>
-                {selectedEmployeeId !== "default" ? `$${totalPay}` : "$0"}
-              </span>
-            </div>
-          </div>
-        </div>
 
-        <div className="px-4 sm:px-6 py-4 border-t text-right">
-          {selectedEmployeeId !== "default" ? (
-            <button className="buttonTheme ">
-              Approve
-            </button>
-          ) : (
-            <div className="text-sm text-gray-500 italic">
-              – Please select an employee to enable approval –
-            </div>
-          )}
-        </div>
+            <div className="px-4 sm:px-6 py-4 border-t text-right">
+              {selectedEmployeeId !== "default" ? (
+                <button className="buttonTheme ">
+                  Approve
+                </button>
+              ) : (
+                <div className="text-sm text-gray-500 italic">
+                  – Please select an employee to enable approval –
+                </div>
+              )}
+            </div></>
+        )}
+
       </div>
     </div>
   );

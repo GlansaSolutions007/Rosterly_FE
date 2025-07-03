@@ -1044,7 +1044,7 @@ const Rosters = () => {
           )}
         </div>
       </div>
-      {stats && (
+      {/* {stats && (
         <div className="w-full flex flex-col md:flex-row items-center justify-start gap-4 mt-6">
           <div className="card w-1/2">
             <h5 className="subHeading text-center">Mon, 7th Apr</h5>
@@ -1088,7 +1088,7 @@ const Rosters = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div>
