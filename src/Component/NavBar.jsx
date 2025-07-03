@@ -22,15 +22,32 @@ const NavBar = ({ toggleSidebar }) => {
   const baseURL = import.meta.env.VITE_BASE_URL;
   const profileURL = import.meta.env.VITE_PROFILE_BASE_URL;
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [hasNotifications, setHasNotifications] = useState(false);
 
   const navigate = useNavigate();
 
-  //   useEffect(() => {
-  //   const image = localStorage.getItem("profileImage");
-  //   if (image) {
-  //     setProfileImage(`${profileURL}/${image}`); // <-- prepend baseURL here
-  //   }
-  // }, []);
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get(`${baseURL}/notifications`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const fetched = response.data?.notifications || [];
+        setHasNotifications(fetched.length > 0);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const loadImage = () => {
@@ -107,7 +124,9 @@ const NavBar = ({ toggleSidebar }) => {
               <span className="absolute -inset-1.5" />
               <span className="sr-only">View notifications</span>
               <BellIcon aria-hidden="true" className="size-6" />
-              <span className="absolute top-0 right-0 transform translate-x -translate-y block h-2 w-2 rounded-full bg-red-600 ring-1 ring-white" />
+              {hasNotifications && (
+                <span className="absolute top-0 right-0 transform translate-x -translate-y block h-2 w-2 rounded-full bg-red-600 ring-1 ring-white" />
+              )}
             </button>
 
             {/* Profile dropdown */}

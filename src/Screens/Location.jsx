@@ -601,7 +601,7 @@ const Location = () => {
             <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
               <div className="flex md:flex-row gap-4">
                 <select
-                  className="input w-full md:w-auto"
+                  className="input w-full md:w-auto cursor-pointer"
                   onChange={handleLocation}
                   value={selectLocation}
                 >

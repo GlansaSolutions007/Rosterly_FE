@@ -272,7 +272,7 @@ const TimeSheet = () => {
       <div className="flex flex-col lg:flex-row flex-wrap justify-between items-start gap-4 py-2">
         <div className="flex flex-wrap gap-3 w-full lg:w-auto">
           <select
-            className="input w-full sm:w-60"
+            className="input w-full sm:w-60 cursor-pointer"
             value={selectedLocation}
             onChange={handleLocation}
           >
@@ -284,7 +284,7 @@ const TimeSheet = () => {
             ))}
           </select>
           <select
-            className="input w-full sm:w-60"
+            className="input w-full sm:w-60 cursor-pointer"
             value={selectedEmployeeId}
             onChange={(e) => {
               const id = e.target.value;
@@ -317,13 +317,13 @@ const TimeSheet = () => {
             )}
           </select>
 
-          <div className="flex items-center justify-center bg-white rounded-lg text-sm font-semibold text-gray-900 w-full sm:w-auto px-2">
+          <div className="flex items-center paragraphBold justify-center bg-white rounded-lg  text-gray-900 w-full sm:w-auto px-2">
             <FaAngleLeft
               className="text-gray-800 hover:text-gray-950 cursor-pointer"
               size={16}
               onClick={handlePrevWeek}
             />
-            <span className="mx-2">{getWeekRange(currentWeek)}</span>
+            <p className="mx-2 ">{getWeekRange(currentWeek)}</p>
             <FaAngleRight
               className="text-gray-800 hover:text-gray-950 cursor-pointer"
               size={16}
