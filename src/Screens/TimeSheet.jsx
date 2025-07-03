@@ -171,19 +171,58 @@ const TimeSheet = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {days.map((dayLabel, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-3 paragraphBold">
-                    {dayLabel}
-                  </td>
-                  <td className="px-6 py-3 text-center">—</td>
-                  <td className="px-6 py-3 text-center">—</td>
-                  <td className="px-6 py-3 text-center">—</td>
-                  <td className="px-6 py-3 text-center">—</td>
-                  <td className="px-6 py-3 text-center">—</td>
-                  <td className="px-6 py-3 text-right font-semibold">$0</td>
-                </tr>
-              ))}
+              {(selectedEmployeeId !== "default"
+                ? weekData
+                : Array(7).fill(null)
+              ).map((item, index) => {
+                let dayLabel = item?.day;
+                if (!item) {
+                  dayLabel = days[index] || "";
+                }
+                return (
+                  <tr key={index}>
+                    <td className="px-6 py-3 paragraphBold">
+                      {dayLabel}
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      {item ? "8 hrs" : "—"}
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      {item ? "30 mins" : "—"}
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      {item
+                        ? item.day === "Wednesday"
+                          ? "9 hrs"
+                          : item.day === "Tuesday"
+                            ? "7 hrs"
+                            : "8 hrs"
+                        : "—"}
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      {item
+                        ? item.day === "Wednesday"
+                          ? "1 hr"
+                          : item.day === "Monday"
+                            ? "0.5 hrs"
+                            : "—"
+                        : "—"}
+                    </td>
+                    <td className="px-6 py-3 text-center">
+                      {item
+                        ? item.day === "Tuesday"
+                          ? "1 hr"
+                          : item.day === "Friday"
+                            ? "1.5 hrs"
+                            : "—"
+                        : "—"}
+                    </td>
+                    <td className="px-6 py-3 text-right font-semibold">
+                      {item ? `$${item.pay}` : "$0"}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -193,18 +232,18 @@ const TimeSheet = () => {
             Weekly Summary (For Manager’s Log)
           </h3>
           <div className="space-y-2 text-sm text-gray-700">
-            <div className="flex justify-between">  
+            <div className="flex justify-between">
               <span>Total Overtime Hours</span>
-              <span>--</span>
+              <span>{selectedEmployeeId !== "default" ? "1.5 hrs" : "0 hrs"}</span>
             </div>
             <div className="flex justify-between">
               <span>Total Less Time Hours</span>
-              <span>--</span>
+              <span>{selectedEmployeeId !== "default" ? "2.5 hrs" : "0 hrs"}</span>
             </div>
             <div className="flex justify-between font-semibold ">
               <span>Total Pay</span>
               <span style={{ color: "green", fontWeight: "bold" }}>
-                $0
+                {selectedEmployeeId !== "default" ? `$${totalPay}` : "$0"}
               </span>
             </div>
           </div>
