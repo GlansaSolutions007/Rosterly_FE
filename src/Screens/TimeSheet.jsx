@@ -445,7 +445,7 @@ const TimeSheet = () => {
           <>
             <div className="bg-white px-4 sm:px-6 py-4 border-t border-gray-200">
               <h3 className="text-base font-semibold text-gray-800 mb-3">
-                Weekly Summary (For Manager’s Log)
+                Weekly Summary ({`${locatedEmployees.find(emp => emp.user.id.toString() === selectedEmployeeId)?.user.firstName || "Employee"}, ${getWeekRange(currentWeek)}`})
               </h3>
               <div className="space-y-2 text-sm text-gray-700">
                 <div className="flex justify-between">
