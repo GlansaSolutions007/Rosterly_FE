@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import DefaultProfileImage from "../assets/images/profile.png";
+import DefaultProfileImage from "../assets/images/user.png";
 import axios from "axios";
 import FeedbackModal from "../Component/FeedbackModal"; // ✅ Import here
 

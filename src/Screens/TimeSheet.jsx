@@ -4,6 +4,7 @@ import { FaFilePdf, FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { IoStatsChartSharp } from "react-icons/io5";
 import axios from "axios";
 import { set } from "date-fns";
+import FeedbackModal from "../Component/FeedbackModal";
 
 const TimeSheet = () => {
   const [currentWeek, setCurrentWeek] = useState(moment());
@@ -16,6 +17,9 @@ const TimeSheet = () => {
   const [timesheetData, setTimesheetData] = useState([]);
   const [weekId, setWeekId] = useState(null);
   const [payrate, setPayrate] = useState(0);
+  const [locationName, setLocationName] = useState("");
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
   const getWeekRange = (week) => {
     const startOfWeek = moment(week).day(3); // 3 = Wednesday
@@ -42,8 +46,10 @@ const TimeSheet = () => {
 
 
   const handleLocation = (e) => {
-    const newLocationId = e.target.value;
+    const newLocationId = Number(e.target.value);
     setSelectedLocation(newLocationId);
+    console.log("Selected Location ID:", newLocationId, "Name:", locationName);
+
     setLocatedEmployees([]);
     setSelectedEmployeeId("default");
 
@@ -73,6 +79,8 @@ const TimeSheet = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLocations(response.data);
+        console.log("Locations:", response.data);
+
       } catch (error) {
         console.error("Error fetching locations:", error);
       }
@@ -267,12 +275,100 @@ const TimeSheet = () => {
     }
   );
 
+  const handleDownloadPDF = async () => {
+    if (selectedEmployeeId === "default" || !timesheetData.length) {
+      setFeedbackModalOpen(true);
+      setFeedbackMessage("Please select an employee with valid timesheet data.");
+      return;
+    }
+
+    const employee = locatedEmployees.find(
+      (emp) => emp.user.id.toString() === selectedEmployeeId
+    )?.user;
+
+    const location = locations.find(loc => loc.id.toString() === selectedLocation.toString());
+
+    const formattedData = timesheetData.map((entry) => {
+      const timeDiff = calculateTimeDiff(entry);
+      const overtime = timeDiff.type === "overtime" ? timeDiff.value : "—";
+      const lessTime = timeDiff.type === "lesstime" ? timeDiff.value : "—";
+
+      const actualHours = timeStrToHours(entry.actual_work_time);
+      const overtimeHours = timeDiff.type === "overtime" ? timeStrToHours(timeDiff.value) : 0;
+      const pay = ((actualHours + overtimeHours) * payrate).toFixed(2);
+
+      return {
+        day: entry.date,
+        scheduled_shift: entry.scheduled_shift !== "—"
+          ? (() => {
+            const [start, end] = entry.scheduled_shift.split(" - ");
+            const duration = timeToMinutes(end) - timeToMinutes(start);
+            const effective = duration - breakToMinutes(entry.scheduled_break);
+            return `${entry.scheduled_shift} (${formatMinutesToReadable(effective)})`;
+          })()
+          : "—",
+        scheduled_break: entry.scheduled_break,
+        actual_working:
+          entry.actual_start !== "—" && entry.actual_end !== "—"
+            ? `${formatTo12Hour(entry.actual_start)} - ${formatTo12Hour(entry.actual_end)} (${entry.actual_work_time})`
+            : "—",
+        actual_break: entry.actual_break,
+        overtime,
+        less_time: lessTime,
+        pay
+      };
+    });
+
+    console.log("selectedLocation:", selectedLocation);
+    console.log("locations:", locations);
+    console.log("Resolved location name:", location?.location_name);
+
+    const payload = {
+      employee: `${employee.firstName} ${employee.lastName}`,
+      week: getWeekRange(currentWeek),
+      location_id: selectedLocation,
+      location_name: location?.location_name || "—",
+      data: formattedData,
+      totalOvertime: `${weeklySummary.totalOvertime.toFixed(2)} hrs`,
+      totalLessTime: `${weeklySummary.totalLessTime.toFixed(2)} hrs`,
+      totalPay: weeklySummary.totalPay.toFixed(2),
+    };
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.post(
+        `${baseURL}/timesheet/download-pdf`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob", // Expect binary file
+        }
+      );
+
+      // Trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${employee.firstName}_Timesheet.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Failed to download PDF:", error);
+      alert("Something went wrong while generating the PDF.");
+    }
+  };
+
+
   return (
     <div className="max-w-screen-xl mx-auto ">
       <div className="flex flex-col lg:flex-row flex-wrap justify-between items-start gap-4 py-2">
         <div className="flex flex-wrap gap-3 w-full lg:w-auto">
           <select
-            className="input w-full sm:w-60"
+            className="input w-full sm:w-60 cursor-pointer"
             value={selectedLocation}
             onChange={handleLocation}
           >
@@ -284,7 +380,7 @@ const TimeSheet = () => {
             ))}
           </select>
           <select
-            className="input w-full sm:w-60"
+            className="input w-full sm:w-60 cursor-pointer"
             value={selectedEmployeeId}
             onChange={(e) => {
               const id = e.target.value;
@@ -317,13 +413,13 @@ const TimeSheet = () => {
             )}
           </select>
 
-          <div className="flex items-center justify-center bg-white rounded-lg text-sm font-semibold text-gray-900 w-full sm:w-auto px-2">
+          <div className="flex items-center paragraphBold justify-center bg-white rounded-lg  text-gray-900 w-full sm:w-auto px-2">
             <FaAngleLeft
               className="text-gray-800 hover:text-gray-950 cursor-pointer"
               size={16}
               onClick={handlePrevWeek}
             />
-            <span className="mx-2">{getWeekRange(currentWeek)}</span>
+            <p className="mx-2 ">{getWeekRange(currentWeek)}</p>
             <FaAngleRight
               className="text-gray-800 hover:text-gray-950 cursor-pointer"
               size={16}
@@ -338,7 +434,7 @@ const TimeSheet = () => {
                 Statistics
               </span>
             </div>
-            <div className="relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2 group">
+            <div onClick={handleDownloadPDF} className="relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2 group">
               <FaFilePdf className="icon50" />
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
                 PDF
@@ -480,6 +576,11 @@ const TimeSheet = () => {
         )}
 
       </div>
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+        message={feedbackMessage}
+      />
     </div>
   );
 };
