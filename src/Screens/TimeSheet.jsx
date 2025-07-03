@@ -138,7 +138,7 @@ const TimeSheet = () => {
 
       if (error.response?.status === 404) {
         setTimesheetData([]);
-        setWeekId(null);  
+        setWeekId(null);
       }
     }
   };
@@ -148,6 +148,18 @@ const TimeSheet = () => {
       postWeek();
     }
   }, [selectedLocation, currentWeek]);
+
+  const formatTo12Hour = (timeStr) => {
+    if (!timeStr || timeStr === "—") return "—";
+    const [hours, minutes, seconds] = timeStr.split(":").map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, seconds);
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   return (
     <div className="max-w-screen-xl mx-auto ">
@@ -245,9 +257,13 @@ const TimeSheet = () => {
                   <tr key={index}>
                     <td className="px-6 py-3 paragraphBold">{entry.date}</td>
                     <td className="px-6 py-3 text-center">{entry.scheduled_shift}</td>
-                    <td className="px-6 py-3 text-center">-</td>
-                    <td className="px-6 py-3 text-center">{entry.actual_work_time}</td>
-                    <td className="px-6 py-3 text-center">{entry.break_time}</td>
+                    <td className="px-6 py-3 text-center">{entry.scheduled_break}</td>
+                    <td className="px-6 py-3 text-center">
+                      {entry.actual_start !== "—" && entry.actual_end !== "—"
+                        ? `${formatTo12Hour(entry.actual_start)} - ${formatTo12Hour(entry.actual_end)} (${entry.actual_work_time})`
+                        : "—"}
+                    </td>
+                    <td className="px-6 py-3 text-center">{entry.actual_break}</td>
                     <td className="px-6 py-3 text-center">—</td>
                     <td className="px-6 py-3 text-center">—</td>
                     <td className="px-6 py-3 text-right font-semibold">$0</td>
