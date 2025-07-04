@@ -31,6 +31,7 @@ import NotFound from './Component/NotFound';
 import ProtectedRoutes from './Component/ProtectedRoutes';
 import Forbidden from './Component/Forbidden';
 import ChangePassword from './Screens/ChangePassword';
+import Role from './Screens/Role';
 
 
 function AppWrapper() {
@@ -83,6 +84,7 @@ function AppWrapper() {
     '/profile',
     '/drag',
     '/changepassword',
+    '/role',
   ].includes(location.pathname);
 
   const role_id = localStorage.getItem("role_id");
@@ -130,6 +132,14 @@ function AppWrapper() {
                     <ProtectedRoutes
                       element={<Unavailability />}
                       allowedRoles={[2, 3]}
+                      userRole={userRole}
+                    />
+                  } />
+                  <Route path='/role'
+                  element={
+                    <ProtectedRoutes
+                      element={<Role />}
+                      allowedRoles={[1]}
                       userRole={userRole}
                     />
                   } />

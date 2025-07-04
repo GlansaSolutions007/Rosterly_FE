@@ -71,6 +71,12 @@ export const navItems = [
         title: 'Notifications',
         path: '/notification',
         roles:[]
+    },
+    {
+        id: 9,
+        title: 'Role',
+        path: '/role',
+        roles:[]
     }
     // {
     //     id: 8,

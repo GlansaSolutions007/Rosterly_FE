@@ -91,7 +91,7 @@ const Rosters = () => {
         return Object.values(empShifts).some(dayShifts => dayShifts && dayShifts.length > 0);
       });
     if (!everyEmployeeHasShift) {
-      setFeedbackMessage("No shift to download.");
+      setFeedbackMessage("No shifts to download.");
       setFeedbackModalOpen(true);
       return;
     }
@@ -1074,7 +1074,7 @@ const Rosters = () => {
           </div>
 
           <div className="flex gap-2">
-            <div
+            {/* <div
               className="group relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2"
               onClick={handleStats}
             >
@@ -1082,7 +1082,7 @@ const Rosters = () => {
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
                 Statistics
               </span>
-            </div>
+            </div> */}
 
             <div className="group relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2">
               <FaFilePdf onClick={handleDownloadPDF} className="icon50" />
