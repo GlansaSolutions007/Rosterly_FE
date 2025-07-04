@@ -198,8 +198,14 @@ const TimeSheet = () => {
 
   const parseActualWorkMinutes = (timeStr) => {
     if (!timeStr || timeStr === "—") return 0;
-    const match = timeStr.match(/\d+/);
-    return match ? parseInt(match[0], 10) : 0;
+
+    const hrMatch = timeStr.match(/(\d+)\s*h/);
+    const minMatch = timeStr.match(/(\d+)\s*m/);
+
+    const hours = hrMatch ? parseInt(hrMatch[1], 10) : 0;
+    const minutes = minMatch ? parseInt(minMatch[1], 10) : 0;
+
+    return hours * 60 + minutes;
   };
 
   const calculateTimeDiff = (entry) => {
@@ -428,26 +434,26 @@ const TimeSheet = () => {
           </div>
 
           <div className="flex gap-2">
-            <div className="relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2 group">
+            {/* <div className="relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2 group">
               <IoStatsChartSharp className="icon50" />
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
                 Statistics
               </span>
-            </div>
+            </div> */}
             <div onClick={handleDownloadPDF} className="relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2 group">
               <FaFilePdf className="icon50" />
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                PDF
+                PDF Download
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="my-5 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto w-full">
           <table className="min-w-[700px] w-full text-sm text-gray-800">
-            <thead className="bg-gray-100 text-xs font-semibold text-gray-600 uppercase">
+            <thead className="bg-gray-200 paragraphBold text-gray-600 uppercase">
               <tr>
                 <th className="px-6 py-3 text-left">Day</th>
                 <th className="px-6 py-3 text-center">Scheduled Shift</th>

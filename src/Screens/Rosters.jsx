@@ -1087,7 +1087,7 @@ const Rosters = () => {
             <div className="group relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2">
               <FaFilePdf onClick={handleDownloadPDF} className="icon50" />
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                PDF
+                PDF Download
               </span>
             </div>
           </div>
@@ -1197,7 +1197,7 @@ const Rosters = () => {
                   <tr key={emp.user.id} className="border border-gray-300">
                     {/* Employee Info */}
                     <td className="p-2 bg-white">
-                      <div className="font-semibold">
+                      <div className="paragraphBold text-gray-900">
                         {emp.user.firstName} {emp.user.lastName}({emp.user_id}){" "}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -1274,9 +1274,9 @@ const Rosters = () => {
                                         {...provided.draggableProps}
                                         {...provided.dragHandleProps}
                                       >
-                                        <div className="flex flex-col items-center justify-end w-full">
+                                        <div className="flex flex-col smallFont items-start justify-end w-full">
                                           <span>{shift.time}</span>
-                                          <span className="text-xs text-gray-200">
+                                          <span className=" text-gray-200">
                                             {calculateShiftDuration(shift.time, shift.breakTime)}
                                           </span>
                                         </div>
