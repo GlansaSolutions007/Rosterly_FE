@@ -75,6 +75,7 @@ const People = () => {
       role_id: "",
       profileImage: "",
     });
+    setCreateDate(null);
     setErrors({});
   };
 
@@ -785,7 +786,7 @@ const People = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                      <label className="paragraphBold">Date of Birthss</label>
+                      <label className="paragraphBold">Date of Birth</label>
                       <DatePicker
                         className="input"
                         selected={createDate}
@@ -861,6 +862,11 @@ const People = () => {
                         }}
                         maxLength={10}
                       />
+                      {errors.mobileNumber && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.mobileNumber}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -922,7 +928,7 @@ const People = () => {
                     </div>
                   )}
                   <div className="flex flex-col">
-                    <label className="paragraphBold">Profile Image</label>
+                    <label className="paragraphBold">Profile Image (Optional)</label>
                     <input
                       type="file"
                       className="bg-white rounded p-2"
@@ -1011,7 +1017,7 @@ const People = () => {
                     Employee Details ({selectedProfile?.firstName})
                   </Dialog.Title>
                   <button
-                    className="text-white font-bold text-2xl"
+                    className="text-white font-bold text-2xl cursor"
                     onClick={() => setViewButtonModel(false)}
                   >
                     ×
