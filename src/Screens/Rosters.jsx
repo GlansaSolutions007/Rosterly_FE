@@ -1084,8 +1084,8 @@ const Rosters = () => {
               </span>
             </div> */}
 
-            <div className="group relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2">
-              <FaFilePdf onClick={handleDownloadPDF} className="icon50" />
+            <div onClick={handleDownloadPDF} className="group relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2">
+              <FaFilePdf  className="icon50" />
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
                 PDF Download
               </span>

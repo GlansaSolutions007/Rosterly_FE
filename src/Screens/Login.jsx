@@ -38,7 +38,6 @@ export default function Login() {
   const [forgotSuccess, setForgotSuccess] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
 
-
   const navigate = useNavigate();
 
   const openModal = () => {
@@ -56,6 +55,28 @@ export default function Login() {
     setModalClass("transform translate-y-10 opacity-0");
     setIsModalOpen(false);
   };
+  // devices
+
+  // const getBrowserInfo = () => {
+  //   return {
+  //     browser: getBrowserName(),
+  //     userAgent: navigator.userAgent,
+  //     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  //   };
+  // };
+
+  // const getBrowserName = () => {
+  //   const ua = navigator.userAgent;
+  //   if (ua.includes("Firefox")) return "Firefox";
+  //   if (ua.includes("Edg")) return "Edge";
+  //   if (ua.includes("OPR") || ua.includes("Opera")) return "Opera";
+  //   if (ua.includes("Chrome") && !ua.includes("Edg") && !ua.includes("OPR"))
+  //     return "Chrome";
+  //   if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+  //   if (ua.includes("Trident") || ua.includes("MSIE"))
+  //     return "Internet Explorer";
+  //   return "Unknown";
+  // };
 
   useEffect(() => {
     if (isModalOpen) {
@@ -64,6 +85,8 @@ export default function Login() {
   }, [isModalOpen]);
 
   useEffect(() => {
+    // const deviceInfo = getBrowserInfo();
+    // console.log("Device Info:", deviceInfo);
     const token = localStorage.getItem("token");
     if (token) {
       navigate("/myrosterly");
@@ -211,8 +234,9 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className={`custom-focus w-full paragraphBold px-2 py-3 border ${errors.email ? "border-red-500" : "border-gray-300"
-                  } rounded-lg`}
+                className={`custom-focus w-full paragraphBold px-2 py-3 border ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                } rounded-lg`}
                 placeholder="Enter your email"
               />
               {errors.email && (
@@ -229,8 +253,9 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => handleChange("password", e.target.value)}
-                  className={`custom-focus w-full paragraphBold px-2 py-3 border ${errors.password ? "border-red-500" : "border-gray-300"
-                    } rounded-lg pr-12`}
+                  className={`custom-focus w-full paragraphBold px-2 py-3 border ${
+                    errors.password ? "border-red-500" : "border-gray-300"
+                  } rounded-lg pr-12`}
                   placeholder="Enter your password"
                 />
                 <span
@@ -257,7 +282,6 @@ export default function Login() {
                 </button>
               </div>
 
-
               {forgotPasswordModalOpen && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                   <div className="bg-white p-6 rounded-lg shadow-2xl w-96">
@@ -273,15 +297,20 @@ export default function Login() {
                       placeholder="Email address"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${forgotError ? "border-red-500 focus:ring-red-300" : "focus:ring-primary"
-                        }`}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        forgotError
+                          ? "border-red-500 focus:ring-red-300"
+                          : "focus:ring-primary"
+                      }`}
                     />
 
                     {forgotError && (
                       <p className="text-sm text-red-500 mt-1">{forgotError}</p>
                     )}
                     {forgotSuccess && (
-                      <p className="text-sm text-gray-700 mt-1">{forgotSuccess}</p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        {forgotSuccess}
+                      </p>
                     )}
 
                     <div className="flex justify-end mt-4">
@@ -298,8 +327,9 @@ export default function Login() {
                       </button>
 
                       <button
-                        className={`buttonSuccess py-2 ml-2 px-4 rounded-lg ${forgotLoading ? "opacity-60 cursor-not-allowed" : ""
-                          }`}
+                        className={`buttonSuccess py-2 ml-2 px-4 rounded-lg ${
+                          forgotLoading ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
                         disabled={forgotLoading}
                         onClick={async () => {
                           setForgotError("");
@@ -315,18 +345,22 @@ export default function Login() {
 
                           setForgotLoading(true);
                           try {
-                            const response = await axios.post(`${baseURL}/forgotPassword`, {
-                              email: forgotEmail,
-                            });
+                            const response = await axios.post(
+                              `${baseURL}/forgotPassword`,
+                              {
+                                email: forgotEmail,
+                              }
+                            );
 
                             setForgotSuccess(
-                              response?.data?.message || "Reset link sent to your email."
+                              response?.data?.message ||
+                                "Reset link sent to your email."
                             );
                             setForgotError("");
                           } catch (error) {
                             setForgotError(
                               error.response?.data?.message ||
-                              "Failed to send reset link. Please try again."
+                                "Failed to send reset link. Please try again."
                             );
                             setForgotSuccess("");
                           } finally {
@@ -340,11 +374,6 @@ export default function Login() {
                   </div>
                 </div>
               )}
-
-
-
-
-
             </div>
             <div>
               <button
