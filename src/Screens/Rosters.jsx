@@ -1198,7 +1198,7 @@ const Rosters = () => {
                     {/* Employee Info */}
                     <td className="p-2 bg-white">
                       <div className="paragraphBold text-gray-900">
-                        {emp.user.firstName} {emp.user.lastName}({emp.user_id}){" "}
+                        {emp.user.firstName} {emp.user.lastName}{" "}
                       </div>
                       <div className="text-xs text-gray-500">
                         {emp.user.payrate} / Hr {emp.cost ? `· ${emp.cost}` : ""}
