@@ -75,6 +75,7 @@ const People = () => {
       role_id: "",
       profileImage: "",
     });
+    setCreateDate(null);
     setErrors({});
   };
 
@@ -94,12 +95,12 @@ const People = () => {
     if (!updatedFormData.lastName?.trim())
       newErrors.lastName = "Last name is required.";
     if (!updatedFormData.email?.trim()) newErrors.email = "Email is required.";
-    if (!updatedFormData.dob?.trim())
-      newErrors.dob = "Date of birth is required.";
-    if (!updatedFormData.payrate?.trim())
-      newErrors.payrate = "Pay rate is required.";
-    if (!updatedFormData.payratePercent?.trim())
-      newErrors.payratePercent = "Pay rate percentage is required.";
+    // if (!updatedFormData.dob?.trim())
+    //   newErrors.dob = "Date of birth is required.";
+    // if (!updatedFormData.payrate?.trim())
+    //   newErrors.payrate = "Pay rate is required.";
+    // if (!updatedFormData.payratePercent?.trim())
+    //   newErrors.payratePercent = "Pay rate percentage is required.";
     if (!updatedFormData.mobileNumber?.trim()) {
       newErrors.mobileNumber = "Mobile number is required.";
     } else if (!/^\d{10}$/.test(updatedFormData.mobileNumber)) {
@@ -731,7 +732,7 @@ const People = () => {
                 <form className="p-6 space-y-3" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                      <label className="paragraphBold">First Name</label>
+                      <label className="paragraphBold">First Name <span className="text-red-600">*</span> </label>
                       <input
                         type="text"
                         className="input"
@@ -750,7 +751,7 @@ const People = () => {
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <label className="paragraphBold">Last Name</label>
+                      <label className="paragraphBold">Last Name <span className="text-red-600">*</span></label>
                       <input
                         type="text"
                         className="input"
@@ -770,7 +771,7 @@ const People = () => {
                     </div>
                   </div>
                   <div className="flex flex-col">
-                    <label className="paragraphBold">Email</label>
+                    <label className="paragraphBold">Email <span className="text-red-600">*</span> </label>
                     <input
                       type="email"
                       className="input"
@@ -826,7 +827,7 @@ const People = () => {
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <label className="paragraphBold">Phone Number</label>
+                      <label className="paragraphBold">Phone Number <span className="text-red-600">*</span> </label>
                       <input
                         type="text"
                         className="input"
@@ -861,6 +862,11 @@ const People = () => {
                         }}
                         maxLength={10}
                       />
+                      {errors.mobileNumber && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.mobileNumber}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -901,7 +907,7 @@ const People = () => {
                   </div>
                   {currentUserRole === 1 && (
                     <div className="flex flex-col">
-                      <label className="paragraphBold">Role</label>
+                      <label className="paragraphBold">Role <span className="text-red-600">*</span> </label>
                       <select
                         className="input"
                         value={formData.role_id || ""}
@@ -1011,7 +1017,7 @@ const People = () => {
                     Employee Details ({selectedProfile?.firstName})
                   </Dialog.Title>
                   <button
-                    className="text-white font-bold text-2xl"
+                    className="text-white font-bold text-2xl cursor"
                     onClick={() => setViewButtonModel(false)}
                   >
                     ×

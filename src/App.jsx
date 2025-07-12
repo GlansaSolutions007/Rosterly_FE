@@ -69,7 +69,7 @@ function AppWrapper() {
     '/unavailability',
     '/employee',
     '/location',
-    '/systemsettings',
+    // '/systemsettings',
     '/payrate',
     '/utilities',
     '/roster',
@@ -161,7 +161,7 @@ function AppWrapper() {
                     />
                   }
                 />
-                <Route
+                {/* <Route
                   path="/systemsettings"
                   element={
                     <ProtectedRoutes
@@ -170,7 +170,7 @@ function AppWrapper() {
                       userRole={userRole}
                     />
                   }
-                />
+                /> */}
                 <Route path='/payrate' element={<PayRate />} />
                 <Route path='/utilities' element={<Utilities />} />
                 <Route path='/roster'

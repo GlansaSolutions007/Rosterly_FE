@@ -587,22 +587,26 @@ const Rosterly = () => {
                             ? "Resume Shift"
                             : "Start Shift"}
                       </button>
-
-                      <button
-                        onClick={handleBreakToggle}
-                        className="buttonDanger mr-2 w-full sm:w-auto"
-                      >
-                        {activeTimer === "break" ? "Stop Break" : "Start Break"}
-                      </button>
+                      {(activeTimer === "shift" || activeTimer === "break") && (
+                        <button
+                          onClick={handleBreakToggle}
+                          className="buttonDanger mr-2 w-full sm:w-auto"
+                        >
+                          {activeTimer === "break" ? "Stop Break" : "Start Break"}
+                        </button>
+                      )}
                     </>
                   )}
-                  <button
-                    onClick={handleFinishShift}
-                    className={`buttonFTheme w-full sm:w-auto ${isShiftFinished ? "cursor-not-allowed" : "cursor-pointer"}`}
-                    disabled={isShiftFinished || !shiftElapsed}
-                  >
-                    {isShiftFinished ? "Shift Finished" : "Finish Shift"}
-                  </button>
+
+                  {(activeTimer === "shift" || activeTimer === "break" || isShiftFinished) && (
+                    <button
+                      onClick={handleFinishShift}
+                      className={`buttonFTheme w-full sm:w-auto ${isShiftFinished ? "cursor-not-allowed" : "cursor-pointer"}`}
+                      disabled={isShiftFinished || !shiftElapsed}
+                    >
+                      {isShiftFinished ? "Shift Finished" : "Finish Shift"}
+                    </button>
+                  )}
                   <div className="subHeading mt-3">Welcome to {locationName}</div>
 
                 </>

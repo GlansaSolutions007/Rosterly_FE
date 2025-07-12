@@ -191,15 +191,21 @@ const TimeSheet = () => {
   const formatMinutesToReadable = (mins) => {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
-    if (h > 0 && m > 0) return `${h} hr ${m} mins`;
+    if (h > 0 && m > 0) return `${h} hr ${m} min`;
     if (h > 0) return `${h} hr`;
-    return `${m} mins`;
+    return `${m} min`;
   };
 
   const parseActualWorkMinutes = (timeStr) => {
     if (!timeStr || timeStr === "—") return 0;
-    const match = timeStr.match(/\d+/);
-    return match ? parseInt(match[0], 10) : 0;
+
+    const hrMatch = timeStr.match(/(\d+)\s*h/);
+    const minMatch = timeStr.match(/(\d+)\s*m/);
+
+    const hours = hrMatch ? parseInt(hrMatch[1], 10) : 0;
+    const minutes = minMatch ? parseInt(minMatch[1], 10) : 0;
+
+    return hours * 60 + minutes;
   };
 
   const calculateTimeDiff = (entry) => {
@@ -240,8 +246,8 @@ const TimeSheet = () => {
   const timeStrToHours = (str) => {
     if (!str || str === "—") return 0;
 
-    const hrMatch = str.match(/(\d+)\s*hr/);
-    const minMatch = str.match(/(\d+)\s*mins?/);
+    const hrMatch = str.match(/(\d+)\s*h(r|rs)?\b/);  // Match h, hr, hrs
+    const minMatch = str.match(/(\d+)\s*m(in|ins)?\b/);
 
     const hours = hrMatch ? parseInt(hrMatch[1]) : 0;
     const minutes = minMatch ? parseInt(minMatch[1]) : 0;
@@ -266,12 +272,24 @@ const TimeSheet = () => {
 
       acc.totalPay += (actualHours + overtimeHours) * payrate;
 
+      if (entry.scheduled_shift !== "—") {
+        const [start, end] = entry.scheduled_shift.split(" - ");
+        const startMin = timeToMinutes(start);
+        const endMin = timeToMinutes(end);
+        const breakMin = breakToMinutes(entry.scheduled_break);
+        const duration = endMin - startMin - breakMin;
+
+        acc.totalScheduled += +(duration / 60).toFixed(2); // in hours
+      }
+
       return acc;
+
     },
     {
       totalOvertime: 0,
       totalLessTime: 0,
       totalPay: 0,
+      totalScheduled: 0,
     }
   );
 
@@ -323,15 +341,17 @@ const TimeSheet = () => {
     console.log("locations:", locations);
     console.log("Resolved location name:", location?.location_name);
 
+
     const payload = {
       employee: `${employee.firstName} ${employee.lastName}`,
       week: getWeekRange(currentWeek),
       location_id: selectedLocation,
       location_name: location?.location_name || "—",
       data: formattedData,
-      totalOvertime: `${weeklySummary.totalOvertime.toFixed(2)} hrs`,
-      totalLessTime: `${weeklySummary.totalLessTime.toFixed(2)} hrs`,
+      totalOvertime: `${weeklySummary.totalOvertime.toFixed(2)} hr`,
+      totalLessTime: `${weeklySummary.totalLessTime.toFixed(2)} hr`,
       totalPay: weeklySummary.totalPay.toFixed(2),
+      scheduledHours: `${weeklySummary.totalScheduled.toFixed(2)} hr`,
     };
 
     try {
@@ -391,6 +411,8 @@ const TimeSheet = () => {
 
               if (selectedEmp) {
                 setPayrate(parseFloat(selectedEmp.user.payrate));
+                console.log("Selected Employee Payrate:", selectedEmp.user.payrate);
+
               } else {
                 setPayrate(0);
               }
@@ -428,26 +450,26 @@ const TimeSheet = () => {
           </div>
 
           <div className="flex gap-2">
-            <div className="relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2 group">
+            {/* <div className="relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2 group">
               <IoStatsChartSharp className="icon50" />
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
                 Statistics
               </span>
-            </div>
+            </div> */}
             <div onClick={handleDownloadPDF} className="relative flex items-center justify-center cursor-pointer bg-white rounded-lg text-sm text-gray-900 w-10 px-2 group">
               <FaFilePdf className="icon50" />
               <span className="absolute top-full mt-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                PDF
+                PDF Download
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="my-5 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto w-full">
           <table className="min-w-[700px] w-full text-sm text-gray-800">
-            <thead className="bg-gray-100 text-xs font-semibold text-gray-600 uppercase">
+            <thead className="bg-gray-200 paragraphBold text-gray-600 uppercase">
               <tr>
                 <th className="px-6 py-3 text-left">Day</th>
                 <th className="px-6 py-3 text-center">Scheduled Shift</th>
@@ -469,7 +491,17 @@ const TimeSheet = () => {
               ) : timesheetData.length > 0 ? (
                 timesheetData.map((entry, index) => (
                   <tr key={index} className="paragraphThin">
-                    <td className="px-6 py-3 paragraphBold">{entry.date}</td>
+                    <td className="px-4 py-1 paragraphBold text-center">
+                      {(() => {
+                        const [day, date] = entry.date.split(", ");
+                        return (
+                          <div className="flex flex-col items-center leading-tight">
+                            <span>{day},</span>
+                            <span>{date}</span>
+                          </div>
+                        );
+                      })()}
+                    </td>
                     <td className="px-6 py-3 text-center">
                       {entry.scheduled_shift !== "—"
                         ? (() => {
@@ -480,24 +512,36 @@ const TimeSheet = () => {
                           const breakMin = breakToMinutes(entry.scheduled_break);
                           const effectiveMin = duration - breakMin;
 
-                          return `${entry.scheduled_shift} (${formatMinutesToReadable(effectiveMin)})`;
+                          return (
+                            <div className="flex flex-col items-center">
+                              <span>{entry.scheduled_shift}</span>
+                              <span className="text-gray-600 text-xs">({formatMinutesToReadable(effectiveMin)})</span>
+                            </div>
+                          );
                         })()
                         : "—"}
                     </td>
                     <td className="px-6 py-3 text-center">{entry.scheduled_break}</td>
                     <td className="px-6 py-3 text-center">
                       {entry.actual_start !== "—" && entry.actual_end !== "—"
-                        ? `${formatTo12Hour(entry.actual_start)} - ${formatTo12Hour(entry.actual_end)} (${entry.actual_work_time})`
+                        ? (
+                          <div className="flex flex-col items-center">
+                            <span>
+                              {formatTo12Hour(entry.actual_start)} - {formatTo12Hour(entry.actual_end)}
+                            </span>
+                            <span className="text-gray-600 text-xs">({entry.actual_work_time})</span>
+                          </div>
+                        )
                         : "—"}
                     </td>
                     <td className="px-6 py-3 text-center">{entry.actual_break}</td>
-                    <td className="px-6 py-3 text-center">
+                    <td className="px-6 py-3 text-center text-green-700">
                       {calculateTimeDiff(entry).type === "overtime"
                         ? calculateTimeDiff(entry).value
                         : "—"}
                     </td>
 
-                    <td className="px-6 py-3 text-center">
+                    <td className="px-6 py-3 text-center text-red-600">
                       {calculateTimeDiff(entry).type === "lesstime"
                         ? calculateTimeDiff(entry).value
                         : "—"}
@@ -512,8 +556,8 @@ const TimeSheet = () => {
                         if (!payrate || isNaN(payrate)) return "$0.00";
 
                         const dailyPay = ((actualHours + overtimeHours) * payrate).toFixed(2);
-
                         return `$${dailyPay}`;
+
                       })()}
                     </td>
                   </tr>
@@ -545,12 +589,16 @@ const TimeSheet = () => {
               </h3>
               <div className="space-y-2 text-sm text-gray-700">
                 <div className="flex justify-between">
+                  <span>Total Scheduled Hours</span>
+                  <span>{weeklySummary.totalScheduled.toFixed(2)} hr</span>
+                </div>
+                <div className="flex justify-between">
                   <span>Total Overtime Hours</span>
-                  <span>{weeklySummary.totalOvertime.toFixed(2)} hrs</span>
+                  <span>{weeklySummary.totalOvertime.toFixed(2)} hr </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total Less Time Hours</span>
-                  <span>{weeklySummary.totalLessTime.toFixed(2)} hrs</span>
+                  <span>{weeklySummary.totalLessTime.toFixed(2)} hr</span>
                 </div>
                 <div className="flex justify-between font-semibold">
                   <span>Total Pay</span>
@@ -564,9 +612,15 @@ const TimeSheet = () => {
 
             <div className="px-4 sm:px-6 py-4 border-t text-right">
               {selectedEmployeeId !== "default" ? (
-                <button className="buttonTheme ">
-                  Approve
-                </button>
+                <>
+                  <button className="buttonDanger ">
+                    Deny
+                  </button>
+                  <button className="buttonTheme ml-2">
+                    Approve
+                  </button>
+
+                </>
               ) : (
                 <div className="text-sm text-gray-500 italic">
                   – Please select an employee to enable approval –

@@ -29,7 +29,7 @@ body {
   --font-heading: 1.25rem;
   --font-subheading: 1rem;
   --font-paragraph: 0.80rem;
-  --font-small: 0.625rem;
+  --font-small: 0.675rem;
 }
 
 
@@ -653,8 +653,7 @@ body {
 
 .smallFont {
   font-size: var(--font-small);
-  font-weight: 400;
-  margin-bottom: 3px;
+  font-weight: 500;
 }
 
 /* Icons start */

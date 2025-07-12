@@ -377,8 +377,8 @@ const Location = () => {
 
     if (!addlocationName.trim())
       newErrors.addlocationName = "Location name is required.";
-    if (!addsales.trim() || isNaN(addsales))
-      newErrors.addsales = "Enter a valid number for sales.";
+    // if (!addsales.trim() || isNaN(addsales))
+    //   newErrors.addsales = "Enter a valid number for sales.";
     if (!addlatitude.trim() || isNaN(addlatitude))
       newErrors.addlatitude = "Enter a valid latitude.";
     if (!addlongitude.trim() || isNaN(addlongitude))
