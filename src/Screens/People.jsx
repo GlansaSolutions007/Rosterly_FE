@@ -785,7 +785,7 @@ const People = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                      <label className="paragraphBold">Date of Birthss</label>
+                      <label className="paragraphBold">Date of Birth</label>
                       <DatePicker
                         className="input"
                         selected={createDate}
