@@ -1,4 +1,4 @@
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaUserMinus } from "react-icons/fa";
 import { CgUnavailable } from "react-icons/cg";
 import { FaPeopleGroup } from "react-icons/fa6";
 import { FaLocationDot } from "react-icons/fa6";
@@ -61,9 +61,9 @@ export const navItems = [
     },
     {
         id: 10,
-        title: 'Deleted User',
+        title: 'Deleted Users',
         path: '/deleteduser',
-        icon: <PiArticleNyTimesFill className="text-2xl text-black" />,
+        icon: <FaUserMinus className="text-2xl text-black" />,
         roles:[1]
     },
     // {

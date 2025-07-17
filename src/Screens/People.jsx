@@ -101,11 +101,11 @@ const People = () => {
     //   newErrors.payrate = "Pay rate is required.";
     // if (!updatedFormData.payratePercent?.trim())
     //   newErrors.payratePercent = "Pay rate percentage is required.";
-    if (!updatedFormData.mobileNumber?.trim()) {
-      newErrors.mobileNumber = "Mobile number is required.";
-    } else if (!/^\d{10}$/.test(updatedFormData.mobileNumber)) {
-      newErrors.mobileNumber = "Mobile number must be exactly 10 digits.";
-    }
+    // if (!updatedFormData.mobileNumber?.trim()) {
+    //   newErrors.mobileNumber = "Mobile number is required.";
+    // } else if (!/^\d{10}$/.test(updatedFormData.mobileNumber)) {
+    //   newErrors.mobileNumber = "Mobile number must be exactly 10 digits.";
+    // }
     if (!updatedFormData.role_id) newErrors.role_id = "Role is required.";
 
     setErrors(newErrors);
@@ -827,7 +827,7 @@ const People = () => {
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <label className="paragraphBold">Phone Number <span className="text-red-600">*</span> </label>
+                      <label className="paragraphBold">Phone Number</label>
                       <input
                         type="text"
                         className="input"
