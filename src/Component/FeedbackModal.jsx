@@ -9,7 +9,7 @@ const FeedbackModal = ({ isOpen, onClose, message, onConfirm, showConfirmButtons
         <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-white shadow-xl transition-all duration-300 ease-out scale-95 opacity-0 animate-fadeIn">
           <div className="flex flex-col items-center p-6 text-center">
             <Dialog.Title className="text-lg font-semibold text-gray-800 mt-2">
-              {message}
+              <div dangerouslySetInnerHTML={{ __html: message }} />
             </Dialog.Title>
             <div className="mt-6 flex gap-4">
               {showConfirmButtons ? (
