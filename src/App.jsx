@@ -32,6 +32,7 @@ import ProtectedRoutes from './Component/ProtectedRoutes';
 import Forbidden from './Component/Forbidden';
 import ChangePassword from './Screens/ChangePassword';
 import Role from './Screens/Role';
+import DeletedUser from './Screens/DeletedUser';
 
 
 function AppWrapper() {
@@ -69,6 +70,7 @@ function AppWrapper() {
     '/unavailability',
     '/employee',
     '/location',
+    '/deleteduser',
     // '/systemsettings',
     '/payrate',
     '/utilities',
@@ -156,6 +158,16 @@ function AppWrapper() {
                   element={
                     <ProtectedRoutes
                       element={<Location />}
+                      allowedRoles={[1,2]}
+                      userRole={userRole}
+                    />
+                  }
+                />
+                <Route
+                  path="/deleteduser"
+                  element={
+                    <ProtectedRoutes
+                      element={<DeletedUser />}
                       allowedRoles={[1, 2]}
                       userRole={userRole}
                     />
