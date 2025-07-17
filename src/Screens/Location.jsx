@@ -377,8 +377,8 @@ const Location = () => {
 
     if (!addlocationName.trim())
       newErrors.addlocationName = "Location name is required.";
-    if (!addsales.trim() || isNaN(addsales))
-      newErrors.addsales = "Enter a valid number for sales.";
+    // if (!addsales.trim() || isNaN(addsales))
+    //   newErrors.addsales = "Enter a valid number for sales.";
     if (!addlatitude.trim() || isNaN(addlatitude))
       newErrors.addlatitude = "Enter a valid latitude.";
     if (!addlongitude.trim() || isNaN(addlongitude))
@@ -433,10 +433,11 @@ const Location = () => {
         console.log("Location added successfully", response.data);
 
         setAddlocationName("");
-        setSales("");
-        setLatitude("");
-        setLongitude("");
+        setAddsales("");           // ✅ fix
+        setAddlatitude("");        // ✅ fix
+        setAddlongitude("");       // ✅ fix
         setAddaddress("");
+
         setErrors({});
         // Close modal if applicable
         setIsModalOpen(false);
@@ -788,7 +789,7 @@ const Location = () => {
                         )}
                       </div>
                     </div>
-                    {selectLocation && (
+                    {selectLocation && roleId == 1 &&(
                       <div className="flex justify-end">
                         <button
                           className="buttonTheme w-full md:w-auto"
@@ -837,7 +838,7 @@ const Location = () => {
                   {/* <div className="flex justify-end mt-6">
                     <button className="buttonSuccess w-full md:w-auto">Update</button>
                   </div> */}
-                  {selectLocation && (
+                  {selectLocation && roleId == 1 &&(
                     <div className="flex justify-end">
                       <button
                         className="buttonTheme w-full md:w-auto"
@@ -1205,35 +1206,6 @@ const Location = () => {
                         <p className="text-gray-500">No employees available</p>
                       )}
                     </div>
-
-
-                    {/* <div className="employee-checkboxes border p-2 rounded max-h-80 overflow-auto">
-                  {employeeName.length > 0 ? (
-                    employeeName.map((emp) => (
-                      <div
-                        className="flex items-center bg-white rounded p-2 gap-3 mb-2"
-                        key={emp.id}
-                      >
-                        <input
-                          type="checkbox"
-                          value={emp.id.toString()}
-                          onChange={handleChange}
-                          checked={employees.includes(emp.id.toString())}
-                        />
-                        <img
-                          src={emp.profileImage}
-                          alt={`${emp.firstName} ${emp.lastName}`}
-                          className="h-10 w-10 rounded-full"
-                        />
-                        <p className="paragraph">
-                          {emp.firstName} {emp.lastName}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500">No employees available</p>
-                  )}
-                </div> */}
                   </div>
 
                   {/* Submit Button */}

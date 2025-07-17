@@ -59,6 +59,13 @@ export const navItems = [
         icon: <PiArticleNyTimesFill className="text-2xl text-black" />,
         roles:[1,2]
     },
+    {
+        id: 10,
+        title: 'Deleted User',
+        path: '/deleteduser',
+        icon: <PiArticleNyTimesFill className="text-2xl text-black" />,
+        roles:[1]
+    },
     // {
     //     id: 7,
     //     title: 'Settings',
